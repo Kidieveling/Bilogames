@@ -1,0 +1,43 @@
+{
+  "$GMProject":"v1",
+  "%Name":"Blank Pixel Game3",
+  "AudioGroups":[
+    {"$GMAudioGroup":"v1","%Name":"audiogroup_default","exportDir":"","name":"audiogroup_default","resourceType":"GMAudioGroup","resourceVersion":"2.0","targets":-1,},
+  ],
+  "configs":{
+    "children":[],
+    "name":"Default",
+  },
+  "defaultScriptType":1,
+  "Folders":[],
+  "ForcedPrefabProjectReferences":[],
+  "IncludedFiles":[],
+  "isEcma":false,
+  "LibraryEmitters":[],
+  "MetaData":{
+    "IDEVersion":"2024.14.4.222",
+  },
+  "name":"Blank Pixel Game3",
+  "resources":[
+    {"id":{"name":"obj_home_in","path":"objects/obj_home_in/obj_home_in.yy",},},
+    {"id":{"name":"obj_home_out","path":"objects/obj_home_out/obj_home_out.yy",},},
+    {"id":{"name":"obj_player","path":"objects/obj_player/obj_player.yy",},},
+    {"id":{"name":"rm_playerhouse","path":"rooms/rm_playerhouse/rm_playerhouse.yy",},},
+    {"id":{"name":"rm_startingarea","path":"rooms/rm_startingarea/rm_startingarea.yy",},},
+    {"id":{"name":"spr_background","path":"sprites/spr_background/spr_background.yy",},},
+    {"id":{"name":"spr_door_in","path":"sprites/spr_door_in/spr_door_in.yy",},},
+    {"id":{"name":"spr_door_out","path":"sprites/spr_door_out/spr_door_out.yy",},},
+    {"id":{"name":"spr_player","path":"sprites/spr_player/spr_player.yy",},},
+    {"id":{"name":"spr_playerhouse","path":"sprites/spr_playerhouse/spr_playerhouse.yy",},},
+  ],
+  "resourceType":"GMProject",
+  "resourceVersion":"2.0",
+  "RoomOrderNodes":[
+    {"roomId":{"name":"rm_startingarea","path":"rooms/rm_startingarea/rm_startingarea.yy",},},
+    {"roomId":{"name":"rm_playerhouse","path":"rooms/rm_playerhouse/rm_playerhouse.yy",},},
+  ],
+  "templateType":"game",
+  "TextureGroups":[
+    {"$GMTextureGroup":"","%Name":"Default","autocrop":true,"border":2,"compressFormat":"bz2","customOptions":"","directory":"","groupParent":null,"isScaled":true,"loadType":"default","mipsToGenerate":0,"name":"Default","resourceType":"GMTextureGroup","resourceVersion":"2.0","targets":-1,},
+  ],
+}
