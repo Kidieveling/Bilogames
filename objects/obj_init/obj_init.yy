@@ -1,12 +1,11 @@
 {
   "$GMObject":"",
-  "%Name":"obj_player",
+  "%Name":"obj_init",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_player",
+  "name":"obj_init",
   "overriddenProperties":[],
   "parent":{
     "name":"Objects",
@@ -31,8 +30,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_player",
-    "path":"sprites/spr_player/spr_player.yy",
+    "name":"spr_init",
+    "path":"sprites/spr_init/spr_init.yy",
   },
   "spriteMaskId":null,
   "visible":true,
