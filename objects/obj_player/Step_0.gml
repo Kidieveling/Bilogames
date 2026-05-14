@@ -12,7 +12,11 @@ var tile_is_blocked = function(_center_x, _foot_y) {
         return true
     }
 
-    return collision_rectangle(left, top, right, bottom, obj_shop_trade, false, true) != noone
+    if (collision_rectangle(left, top, right, bottom, obj_shop_trade, false, true) != noone) {
+        return true
+    }
+
+    return collision_rectangle(left, top, right, bottom, obj_start_obstacle, false, true) != noone
 }
 
 // Store latest held direction, including diagonals
