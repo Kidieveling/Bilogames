@@ -1,6 +1,35 @@
+if (instance_exists(obj_dialogue) && obj_dialogue.active) {
+    exit
+}
+
+if (instance_exists(obj_dialogue) && obj_dialogue.input_cooldown > 0) {
+    exit
+}
+
 // Read input every frame
 var input_x = keyboard_check(ord("D")) - keyboard_check(ord("A"))
 var input_y = keyboard_check(ord("S")) - keyboard_check(ord("W"))
+
+if (mouse_check_button_pressed(mb_right)) {
+    if (instance_exists(obj_context_menu)) {
+        with (obj_context_menu) {
+            instance_destroy()
+        }
+    }
+
+    var clicked = collision_point(mouse_x, mouse_y, obj_start_tree, false, true)
+
+    if (clicked == noone) {
+        clicked = collision_point(mouse_x, mouse_y, obj_shop_trade, false, true)
+    }
+
+    if (clicked != noone && variable_instance_exists(clicked, "get_context_options")) {
+        var menu = instance_create_layer(0, 0, "Instances", obj_context_menu)
+        menu.menu_x = device_mouse_x_to_gui(0)
+        menu.menu_y = device_mouse_y_to_gui(0)
+        menu.options = clicked.get_context_options(id)
+    }
+}
 
 var tile_is_blocked = function(_center_x, _foot_y) {
     var left = _center_x - tile_size / 2
