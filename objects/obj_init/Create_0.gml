@@ -13,26 +13,25 @@ global.inventory_slots = global.inventory_cols * global.inventory_rows;
 global.inventory = array_create(global.inventory_slots, noone);
 
 global.inventory[0] = {
-    name: "Potion",
-    sprite: spr_tile_floor,
+    item_id: Item.POTION,
+    name: global.item_get_name(Item.POTION),
+    sprite: global.item_get_sprite(Item.POTION),
     amount: 3
 };
 
 global.inventory[1] = {
-    name: "Key",
-    sprite: spr_tile_blocked,
+    item_id: Item.KEY,
+    name: global.item_get_name(Item.KEY),
+    sprite: global.item_get_sprite(Item.KEY),
     amount: 1
 };
 
 global.inventory[2] = {
-    name: "Bronze axe",
-    sprite: spr_item_bronze_axe,
+    item_id: Item.BRONZE_AXE,
+    name: global.item_get_name(Item.BRONZE_AXE),
+    sprite: global.item_get_sprite(Item.BRONZE_AXE),
     amount: 1,
-    type: "tool"
+    type: global.item_get_type(Item.BRONZE_AXE)
 };
-
-if (!instance_exists(obj_dialogue)) {
-    instance_create_layer(0, 0, "Instances", obj_dialogue);
-}
 
 room_goto(rm_tutorial);
