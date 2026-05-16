@@ -44,7 +44,7 @@ enum SortType {
 ///4 (Price)
 ///5 (Object)
 
-global.AllItems = ds_grid_create(0, Item.Height);
+global.AllItems = ds_grid_create(0, Item.Height)
 
 
 AddItemToMasterList(["Bronze Axe", spr_bronze_axe, 1, Type.Tool, 5, obj_bronze_axe]);

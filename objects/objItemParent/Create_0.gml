@@ -18,6 +18,3 @@ name = undefined;
 price = undefined;
 
 isInMenu = false;
-isShowingInfo = false;
-
-textWidth = sprite_get_width(spr_description) - 60;

@@ -13,6 +13,8 @@ draw_sprite(spr_HUD, 0, CameraX() + sprite_get_xoffset(spr_HUD), CameraY() + spr
 draw_sprite(spr_skillBar, 0, CameraMiddleX(), CameraY() + viewHeight - sprite_get_yoffset(spr_skillBar) - 12);
 
 if (isShowingMenu) {
+	var hoveredItem = undefined;
+	
 	//Pause the game
 	draw_set_color(c_black);
 	draw_set_alpha(.75);
@@ -60,23 +62,9 @@ if (isShowingMenu) {
 				currentItem.type = myItems[# i, Item.Type];
 				currentItem.name = myItems[# i, Item.Name];
 				currentItem.isInMenu = true;
-				if (showingDescription) {
-					currentItem.isShowingInfo = true;
-				}
 			}
-			
-			//Clicked on an item
-			if (mouse_check_button_pressed(mb_left) && showingDescription == false) {
-				sequence = layer_sequence_create("Instances", CameraMiddleX(), CameraMiddleY(), sqDescriptionAnimation);
-			}
-			//Lock Item
-			if (mouse_check_button_pressed(mb_right) && itemLocked == false && showingDescription == true) {
-				itemLocked = true;
-				lockedItemX = itemX;
-				lockedItemY = itemY;
-			}
-			else if (mouse_check_button_pressed(mb_right) && itemLocked == true) {
-				itemLocked = false;
+			if (instance_exists(myItems[# i, Item.Object])) {
+				hoveredItem = instance_find(myItems[# i, Item.Object], 0);
 			}
 		}
 	}
@@ -111,16 +99,6 @@ if (isShowingMenu) {
 		alarm[0] = 1;
 	}
 	
-	//Exit description
-	if (point_in_rectangle(mouse_x, mouse_y, CameraX() + 580, CameraY() + 35, CameraX() + 620, CameraY() + 70) == true) {
-		if(mouse_check_button_pressed(mb_left) && sequence != undefined) {
-			layer_sequence_headdir(sequence, seqdir_left);
-			layer_sequence_play(sequence);
-			showingDescription = false;
-			instance_destroy(objItemParent);
-		}
-	}
-	
 	//Ensure only 1 item exists at a time
 	if (instance_number(objItemParent) > 1) {
 		instance_destroy(objItemParent);
@@ -146,14 +124,15 @@ if (isShowingMenu) {
 	if (sortType == SortType.Type) {
 		draw_text(inventoryLeft + 37, inventoryTop + 397, "Sorting by Type");
 	}
+	if (hoveredItem != undefined && hoveredItem != noone) {
+		DrawHoverItemDetails(hoveredItem);
+	}
 	
 	//Press Button
 	if (point_in_rectangle(mouse_x, mouse_y, CameraX() + 440, CameraY() + 435, CameraX() + 520, CameraY() + 470) == true && mouse_check_button_pressed(mb_left)) {
 		show_message("Button pressed.");
 	}
 }
-
-draw_sprite(spr_cursor, 0, mouse_x, mouse_y);
 
 
 

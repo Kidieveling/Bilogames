@@ -3,11 +3,7 @@
 if (keyboard_check_pressed(ord("M"))) {
 	if (isShowingMenu == true) {
 		isShowingMenu = false;
-		if (sequence != undefined) {
-			layer_sequence_destroy(sequence);
-			instance_destroy(objItemParent);
-			showingDescription = false;
-		}
+		instance_destroy(objItemParent);
 	}
 	else {
 		isShowingMenu = true;
@@ -26,15 +22,4 @@ if (isShowingMenu) {
 		}
 		SortInventory(myItems, sortType);
 	}
-}
-
-//Animations
-if (sequence != undefined && layer_sequence_is_finished(sequence) && layer_sequence_get_headdir(sequence) == seqdir_right) {
-	showingDescription = true;
-	if (instance_exists(objItemParent) == true) {
-		currentItem.isShowingInfo = true;
-	}
-}
-if (sequence != undefined && layer_sequence_is_finished(sequence) && layer_sequence_get_headdir(sequence) == seqdir_left) {
-	layer_sequence_destroy(sequence);
 }
