@@ -3,6 +3,7 @@ sprite_index = spr_tree_spawn
 
 resource_name = "Normal Tree"
 resource_action = "Chop"
+resource_skill = "Woodcutting"
 required_level = 1
 required_tool_name = "Bronze Axe"
 item_name = "Normal Log"

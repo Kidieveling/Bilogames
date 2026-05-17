@@ -3,6 +3,7 @@ sprite_index = spr_ore_spawn
 
 resource_name = "Copper Node"
 resource_action = "Swing Pickaxe"
+resource_skill = "Mining"
 required_level = 1
 required_tool_name = "Bronze Pickaxe"
 item_name = "Copper Ore"

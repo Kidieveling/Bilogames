@@ -63,6 +63,7 @@
     {"id":{"name":"spr_bronze_axe","path":"sprites/spr_bronze_axe/spr_bronze_axe.yy",},},
     {"id":{"name":"spr_bronze_pickaxe","path":"sprites/spr_bronze_pickaxe/spr_bronze_pickaxe.yy",},},
     {"id":{"name":"spr_copper_ore","path":"sprites/spr_copper_ore/spr_copper_ore.yy",},},
+    {"id":{"name":"spr_crafting_trainer","path":"sprites/spr_crafting_trainer/spr_crafting_trainer.yy",},},
     {"id":{"name":"spr_cursor","path":"sprites/spr_cursor/spr_cursor.yy",},},
     {"id":{"name":"spr_HUD","path":"sprites/spr_HUD/spr_HUD.yy",},},
     {"id":{"name":"spr_init","path":"sprites/spr_init/spr_init.yy",},},

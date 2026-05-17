@@ -30,6 +30,7 @@ GetItemTypeName = function(_type) {
 		case Type.Weapon: return "Weapon";
 		case Type.Armor: return "Armor";
 		case Type.Tool: return "Tool";
+		case Type.Resource: return "Resource";
 		case Type.Consumable: return "Consumable";
 	}
 	return "Item";

@@ -40,7 +40,7 @@ function AddItem(grid, attributes) {
 	}
 	
 	//Third check - Can it stack?
-	if (attributes[Item.Type] != Type.Consumable) {
+	if (attributes[Item.Type] != Type.Consumable && attributes[Item.Type] != Type.Resource) {
 		canStack = false
 		if (attributes[Item.Amount] > 1) {
 			for(var i = 0; i < attributes[Item.Amount]; ++i) {
