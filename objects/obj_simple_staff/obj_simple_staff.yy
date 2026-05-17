@@ -9,8 +9,8 @@
   "name":"obj_simple_staff",
   "overriddenProperties":[],
   "parent":{
-    "name":"Items",
-    "path":"folders/Objects/Items.yy",
+    "name":"Weapons",
+    "path":"folders/Objects/Items/Weapons.yy",
   },
   "parentObjectId":null,
   "persistent":false,

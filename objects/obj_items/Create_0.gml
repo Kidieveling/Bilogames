@@ -15,6 +15,7 @@ enum Type {
 	Weapon,
 	Armor,
 	Tool,
+    Resource,
 	Consumable
 }
 
@@ -49,9 +50,9 @@ global.AllItems = ds_grid_create(0, Item.Height)
 
 AddItemToMasterList(["Bronze Axe", spr_bronze_axe, 1, Type.Tool, 5, obj_bronze_axe])
 AddItemToMasterList(["Simple Staff", spr_simple_staff, 1 , Type.Weapon, 10, obj_simple_staff])
-AddItemToMasterList(["Normal Log", spr_normal_log, 1, Type.Consumable, 1, obj_normal_log])
-
-
+AddItemToMasterList(["Normal Log", spr_normal_log, 1, Type.Resource, 1, obj_normal_log])
+AddItemToMasterList(["Bronze Pickaxe",spr_bronze_pickaxe, 1, Type.Tool, 5, obj_bronze_pickaxe])
+AddItemToMasterList(["Copper Ore", spr_copper_ore, 1, Type.Resource, 1, obj_copper_ore])
 
 
 

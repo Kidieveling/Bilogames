@@ -3,7 +3,7 @@ sprite_index = spr_magic_trainer
 npc_name = "Magic Trainer"
 npc_text = "Want to learn about Magic?"
 dialogue_text = npc_name + ": " + npc_text
-x -= 16
+
 npc_choices = [
 	{
 		text: "Can you teach me?",

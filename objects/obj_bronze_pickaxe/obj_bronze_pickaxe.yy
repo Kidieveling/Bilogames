@@ -1,20 +1,15 @@
 {
   "$GMObject":"",
-  "%Name":"obj_bronze_axe",
-  "eventList":[
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-  ],
+  "%Name":"obj_bronze_pickaxe",
+  "eventList":[],
   "managed":true,
-  "name":"obj_bronze_axe",
+  "name":"obj_bronze_pickaxe",
   "overriddenProperties":[],
   "parent":{
     "name":"Tools",
     "path":"folders/Objects/Items/Tools.yy",
   },
-  "parentObjectId":{
-    "name":"objItemParent",
-    "path":"objects/objItemParent/objItemParent.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -33,12 +28,9 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_bronze_axe",
-    "path":"sprites/spr_bronze_axe/spr_bronze_axe.yy",
+    "name":"spr_bronze_pickaxe",
+    "path":"sprites/spr_bronze_pickaxe/spr_bronze_pickaxe.yy",
   },
-  "spriteMaskId":{
-    "name":"spr_bronze_axe",
-    "path":"sprites/spr_bronze_axe/spr_bronze_axe.yy",
-  },
+  "spriteMaskId":null,
   "visible":true,
 }
