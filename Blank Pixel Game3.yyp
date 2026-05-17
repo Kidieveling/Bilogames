@@ -33,6 +33,7 @@
   ],
   "ForcedPrefabProjectReferences":[],
   "IncludedFiles":[
+    {"$GMIncludedFile":"","%Name":"npc_trainer_direction.md","CopyToMask":-1,"filePath":"datafiles","name":"npc_trainer_direction.md","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"skill_progression_system.md","CopyToMask":-1,"filePath":"datafiles","name":"skill_progression_system.md","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"ui_panel.png","CopyToMask":-1,"filePath":"datafiles/ui_slices","name":"ui_panel.png","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
     {"$GMIncludedFile":"","%Name":"ui_skill_row.png","CopyToMask":-1,"filePath":"datafiles/ui_slices","name":"ui_skill_row.png","resourceType":"GMIncludedFile","resourceVersion":"2.0",},
@@ -81,7 +82,6 @@
     {"id":{"name":"spr_furnace","path":"sprites/spr_furnace/spr_furnace.yy",},},
     {"id":{"name":"spr_init","path":"sprites/spr_init/spr_init.yy",},},
     {"id":{"name":"spr_knife","path":"sprites/spr_knife/spr_knife.yy",},},
-    {"id":{"name":"spr_magic_trainer","path":"sprites/spr_magic_trainer/spr_magic_trainer.yy",},},
     {"id":{"name":"spr_mining_trainer","path":"sprites/spr_mining_trainer/spr_mining_trainer.yy",},},
     {"id":{"name":"spr_normal_log","path":"sprites/spr_normal_log/spr_normal_log.yy",},},
     {"id":{"name":"spr_npc","path":"sprites/spr_npc/spr_npc.yy",},},
@@ -100,6 +100,7 @@
     {"id":{"name":"spr_ui_tab","path":"sprites/spr_ui_tab/spr_ui_tab.yy",},},
     {"id":{"name":"spr_ui_xp_bar_back","path":"sprites/spr_ui_xp_bar_back/spr_ui_xp_bar_back.yy",},},
     {"id":{"name":"spr_ui_xp_bar_fill","path":"sprites/spr_ui_xp_bar_fill/spr_ui_xp_bar_fill.yy",},},
+    {"id":{"name":"spr_welcome","path":"sprites/spr_welcome/spr_welcome.yy",},},
     {"id":{"name":"spr_woodcutting_trainer","path":"sprites/spr_woodcutting_trainer/spr_woodcutting_trainer.yy",},},
   ],
   "resourceType":"GMProject",

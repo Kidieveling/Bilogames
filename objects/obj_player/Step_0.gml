@@ -20,31 +20,46 @@ if (!dialogue_blocking_input) {
 if (input_x != 0 || input_y != 0) {
     buffer_x = input_x
     buffer_y = input_y
+    click_path = []
+    click_path_index = 0
+    pending_click_move = false
+    pending_click_target = noone
+    pending_click_action = ""
+    pending_click_action_label = ""
 }
 
 var clicked_target = noone
 var hover_target = noone
+var mouse_over_fixed_ui = false
 if (instance_exists(obj_controller)) {
+	mouse_over_fixed_ui = obj_controller.IsMouseOverFixedUI(mouse_x, mouse_y)
+}
+if (instance_exists(obj_controller) && !mouse_over_fixed_ui) {
 	hover_target = obj_controller.GetInteractTargetAtPoint(mouse_x, mouse_y)
 }
-global.hover_target = hover_target
 
-if (!dialogue_blocking_input && (mouse_check_button_pressed(mb_right) || mouse_check_button_pressed(mb_left))) {
+if (!dialogue_blocking_input && !mouse_over_fixed_ui && (mouse_check_button_pressed(mb_right) || mouse_check_button_pressed(mb_left))) {
 	clicked_target = hover_target
 }
 
-if (!dialogue_blocking_input && mouse_check_button_pressed(mb_right)) {
-	global.debug_right_click = true;
+if (!dialogue_blocking_input && !mouse_over_fixed_ui && mouse_check_button_pressed(mb_right)) {
 	if (instance_exists(obj_controller)) {
 		obj_controller.CloseContextMenu()
 	}
-	if (clicked_target != noone) {
-		pending_context_target = clicked_target
-		if (instance_exists(obj_controller)) {
-			with (obj_controller) {
-				OpenContextMenu(other.pending_context_target, device_mouse_x_to_gui(0), device_mouse_y_to_gui(0))
-			}
+	pending_context_target = clicked_target
+	pending_context_x = mouse_x
+	pending_context_y = mouse_y
+	if (instance_exists(obj_controller)) {
+		with (obj_controller) {
+			OpenContextMenu(other.pending_context_target, other.pending_context_x, other.pending_context_y)
 		}
+	}
+}
+
+if (!dialogue_blocking_input && instance_exists(obj_controller) && obj_controller.menu_open) {
+	var openMenuRect = obj_controller.GetContextMenuRect();
+	if (!point_in_rectangle(mouse_x, mouse_y, openMenuRect.x, openMenuRect.y, openMenuRect.x + openMenuRect.w, openMenuRect.y + openMenuRect.h)) {
+		obj_controller.CloseContextMenu();
 	}
 }
 
@@ -61,8 +76,8 @@ if (!dialogue_blocking_input && mouse_check_button_pressed(mb_left)) {
 			controller.CloseContextMenu();
 		}
 	} else {
-		if (instance_exists(obj_context_menu)) {
-			// let the menu handle it
+		if (mouse_over_fixed_ui) {
+			// Fixed UI handles this click.
 		} else if (clicked_target != noone) {
 			if (clicked_target.object_index == obj_npc) {
 				if (npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, clicked_target, 1)) {
@@ -181,6 +196,50 @@ if (moving) {
         y = target_y
 
         moving = false
+        
+        if (array_length(click_path) > 0 && click_path_index < array_length(click_path) - 1 && input_x == 0 && input_y == 0) {
+            click_path_index += 1
+            var next_click_step = click_path[click_path_index]
+            var next_click_tile_x = TileXFromPosition(next_click_step.x)
+            var next_click_tile_y = TileYFromBottom(next_click_step.y)
+            var next_click_blocked = false
+            
+            if (
+                next_click_step.x < 0 ||
+                next_click_step.x >= room_width ||
+                next_click_step.y < tile_size ||
+                next_click_step.y > room_height
+            ) {
+                next_click_blocked = true
+            }
+            if (TileBlockedByObject(next_click_tile_x, next_click_tile_y, obj_npc)) {
+                next_click_blocked = true
+            }
+            if (TileBlockedByObject(next_click_tile_x, next_click_tile_y, obj_resource)) {
+                next_click_blocked = true
+            }
+            
+            if (!next_click_blocked) {
+                target_x = next_click_step.x
+                target_y = next_click_step.y
+                move_x = sign(target_x - x)
+                move_y = sign(target_y - y)
+                SetFacingFromVector(move_x, move_y)
+                moving = true
+                pending_click_move = true
+            } else {
+                click_path = []
+                click_path_index = 0
+                pending_click_move = false
+                pending_click_target = noone
+                pending_click_action = ""
+                pending_click_action_label = ""
+            }
+        } else if (array_length(click_path) > 0 && click_path_index >= array_length(click_path) - 1) {
+            click_path = []
+            click_path_index = 0
+            pending_click_move = false
+        }
 
         // If player released the keys, stop queued movement
         if (input_x == 0 && input_y == 0) {
@@ -232,12 +291,6 @@ if (!moving && pending_click_target != noone) {
     }
 }
 
-if (instance_exists(obj_context_menu) && mouse_check_button_pressed(mb_left)) {
-    if (point_in_rectangle(mouse_x, mouse_y, obj_context_menu.x, obj_context_menu.y, obj_context_menu.x + obj_context_menu.width, obj_context_menu.y + (array_length(obj_context_menu.actions) * obj_context_menu.option_h))) {
-        // menu handles it
-    }
-}
-
 var npc = instance_nearest(x, y, obj_npc);
 var npc_in_range = npc != noone && obj_controller.IsInInteractionRange(id, npc, 1);
 if (npc_in_range) {
@@ -246,7 +299,20 @@ if (npc_in_range) {
     }
 }
 
-var resource = instance_nearest(x, y, obj_resource);
+var resource = noone;
+var resource_distance = 100000000;
+for (var resource_index = 0; resource_index < instance_number(obj_resource); resource_index++) {
+    var possible_resource = instance_find(obj_resource, resource_index);
+    if (possible_resource.depleted) {
+        continue;
+    }
+    
+    var possible_resource_distance = point_distance(x, y, possible_resource.x, possible_resource.y);
+    if (possible_resource_distance < resource_distance) {
+        resource = possible_resource;
+        resource_distance = possible_resource_distance;
+    }
+}
 var resource_in_range = resource != noone && obj_controller.IsInInteractionRange(id, resource, 1);
 if (!npc_in_range && resource_in_range) {
     if (!dialogue_blocking_input && keyboard_check_pressed(ord("E"))) {
@@ -280,16 +346,39 @@ if (!dialogue_blocking_input && !moving && pending_resource != noone) {
 
 if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
     var prompt_npc = instance_nearest(x, y, obj_npc);
-    var prompt_resource = instance_nearest(x, y, obj_resource);
-    
-    if (prompt_npc != noone && npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, prompt_npc, 1)) {
-        with (obj_dialogue) {
-            prompt("[E] Talk to " + prompt_npc.npc_name);
+    var prompt_resource = noone;
+    var prompt_resource_distance = 100000000;
+    for (var prompt_resource_index = 0; prompt_resource_index < instance_number(obj_resource); prompt_resource_index++) {
+        var possible_prompt_resource = instance_find(obj_resource, prompt_resource_index);
+        if (possible_prompt_resource.depleted) {
+            continue;
+        }
+        
+        var possible_prompt_resource_distance = point_distance(x, y, possible_prompt_resource.x, possible_prompt_resource.y);
+        if (possible_prompt_resource_distance < prompt_resource_distance) {
+            prompt_resource = possible_prompt_resource;
+            prompt_resource_distance = possible_prompt_resource_distance;
         }
     }
-    else if (prompt_resource != noone && obj_controller.IsInInteractionRange(id, prompt_resource, 1)) {
+    
+    if (hover_target != noone && hover_target.object_index == obj_npc) {
         with (obj_dialogue) {
-            prompt("[E] " + prompt_resource.resource_action + " " + prompt_resource.resource_name);
+            prompt(obj_controller.FormatTargetPrompt("Click", hover_target));
+        }
+    }
+    else if (hover_target != noone && hover_target.object_index == obj_resource && !hover_target.depleted) {
+        with (obj_dialogue) {
+            prompt(obj_controller.FormatTargetPrompt("Click", hover_target));
+        }
+    }
+    else if (prompt_npc != noone && npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, prompt_npc, 1)) {
+        with (obj_dialogue) {
+            prompt(obj_controller.FormatTargetPrompt("Interact", prompt_npc));
+        }
+    }
+    else if (prompt_resource != noone && !prompt_resource.depleted && obj_controller.IsInInteractionRange(id, prompt_resource, 1)) {
+        with (obj_dialogue) {
+            prompt(obj_controller.FormatTargetPrompt("Interact", prompt_resource));
         }
     }
     else {

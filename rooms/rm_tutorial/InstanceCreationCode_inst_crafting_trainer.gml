@@ -1,14 +1,22 @@
 sprite_index = spr_crafting_trainer;
 
+if (!variable_global_exists("welcomer_approval_started")) {
+	global.welcomer_approval_started = false;
+}
+
 npc_name = "Crafting Trainer";
-npc_text = "Want to learn about crafting?";
+npc_text = "Crafting comes after approval starts. The Welcomer likes things in order. Annoying, but useful.";
 dialogue_text = npc_name + ": " + npc_text;
 
 npc_choices = [
     {
         text: "Can you teach me?",
         action: function() {
-            if (!HasItem(obj_controller.myItems, "Normal Log")) {
+            if (!global.welcomer_approval_started) {
+                with (obj_dialogue) {
+                    show("Crafting Trainer: Start with the Welcomer. They decide who gets approved for skill work, tools, and settlement responsibility. I organize materials, not second chances.", []);
+                }
+            } else if (!HasItem(obj_controller.myItems, "Normal Log")) {
                 with (obj_dialogue) {
                     show("Crafting Trainer: You need to gather some Normal Logs", []);
                 }

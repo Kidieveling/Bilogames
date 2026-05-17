@@ -7,6 +7,22 @@ if (notice_timer > 0) {
 	notice_timer -= 1;
 }
 
+if (keyboard_check_pressed(vk_escape)) {
+	if (instance_exists(obj_controller) && obj_controller.menu_open) {
+		obj_controller.CloseContextMenu();
+	}
+	else if (active) {
+		hide();
+	}
+	else if (notice_timer > 0) {
+		notice_text = "";
+		notice_timer = 0;
+	}
+	else if (prompt_active) {
+		clear_prompt();
+	}
+}
+
 if (active) {
 	if (keyboard_check_pressed(ord("W"))) {
 		choice_index -= 1;

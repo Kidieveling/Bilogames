@@ -36,12 +36,15 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 	
 	var tabY1 = menuTop - 27;
 	var tabY2 = tabY1 + 28;
-	var inventoryTabX1 = menuLeft + 30;
-	var inventoryTabW = 100;
+	var inventoryTabX1 = menuLeft + 22;
+	var inventoryTabW = 80;
 	var inventoryTabX2 = inventoryTabX1 + inventoryTabW;
-	var spellsTabX1 = inventoryTabX2 + 10;
-	var spellsTabW = 88;
+	var spellsTabX1 = inventoryTabX2 + 8;
+	var spellsTabW = 72;
 	var spellsTabX2 = spellsTabX1 + spellsTabW;
+	var questsTabX1 = spellsTabX2 + 8;
+	var questsTabW = 72;
+	var questsTabX2 = questsTabX1 + questsTabW;
 	
 	draw_set_font(fntSmaller);
 	draw_set_alpha(1);
@@ -61,6 +64,14 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 	}
 	draw_sprite_stretched(spr_ui_tab, 0, spellsTabX1, tabY1, spellsTabW, 28);
 	draw_text(spellsTabX1 + (spellsTabW - string_width("Skills")) / 2, tabY1 + 8, "Skills");
+	if (selectedMenuTab == menuTabQuests) {
+		draw_set_color(c_white);
+	}
+	else {
+		draw_set_color(c_gray);
+	}
+	draw_sprite_stretched(spr_ui_tab, 0, questsTabX1, tabY1, questsTabW, 28);
+	draw_text(questsTabX1 + (questsTabW - string_width("Quests")) / 2, tabY1 + 8, "Quests");
 	
 	//Items
 	if (selectedMenuTab == menuTabInventory) {
@@ -138,7 +149,7 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 			hoveredItemSlot = undefined;
 		}
 	}
-	else {
+	else if (selectedMenuTab == menuTabSpells) {
 		draw_set_alpha(1);
 		draw_set_font(fntSmaller);
 		
@@ -168,6 +179,38 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 			if (progressAmount > 0) {
 				draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * progressAmount), sprite_get_height(spr_ui_xp_bar_fill), skillSlotX + 14, slotTop + 42, 200 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
 			}
+		}
+	}
+	else {
+		draw_set_alpha(1);
+		draw_set_font(fntSmaller);
+		
+		var questX = menuLeft + 34;
+		var questY = menuTop + 52;
+		var questW = 228;
+		var questH = 86;
+		var questState = global.quest_woodcutting_state;
+		var questProgress = GetWoodcuttingQuestProgress();
+		var questRequired = global.quest_woodcutting_required_logs;
+		var questProgressAmount = clamp(questProgress / max(1, questRequired), 0, 1);
+		var questStatus = "Not started";
+		if (questState == 1) {
+			questStatus = "Active";
+		}
+		if (questState == 2) {
+			questStatus = "Complete";
+			questProgress = questRequired;
+			questProgressAmount = 1;
+		}
+		
+		draw_sprite_stretched(spr_ui_skill_row, 0, questX, questY, questW, questH);
+		draw_set_color(c_white);
+		draw_text(questX + 12, questY + 8, "Approval: Timber Duty");
+		draw_text(questX + 12, questY + 28, questStatus);
+		draw_text(questX + 12, questY + 46, "Normal Logs: " + string(questProgress) + " / " + string(questRequired));
+		draw_sprite_stretched(spr_ui_xp_bar_back, 0, questX + 14, questY + 68, 200, 11);
+		if (questProgressAmount > 0) {
+			draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * questProgressAmount), sprite_get_height(spr_ui_xp_bar_fill), questX + 14, questY + 68, 200 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
 		}
 	}
 	
@@ -220,50 +263,5 @@ if (selectedMenuTab == menuTabInventory && hoveredItem != undefined && hoveredIt
 	DrawHoverItemDetails(hoveredItem);
 }
 
-if (menu_open && instance_exists(menu_target) && array_length(menu_actions) > 0) {
-	var rect = GetContextMenuRect();
-	var mx = rect.x;
-	var my = rect.y;
-	var menuW = rect.w;
-	var optionH = rect.option_h;
-	var menuH = rect.h;
-	draw_set_alpha(0.95);
-	draw_set_color(c_yellow);
-	draw_rectangle(mx - 4, my - 4, mx + menuW + 4, my + menuH + 4, false);
-	draw_set_alpha(1);
-	draw_set_color(c_black);
-	draw_rectangle(mx, my, mx + menuW, my + menuH, false);
-	draw_set_color(c_white);
-	draw_rectangle(mx, my, mx + menuW, my + menuH, true);
-	draw_set_font(fntSmaller);
-	var hoveredOption = -1;
-	if (point_in_rectangle(mouse_x, mouse_y, mx, my, mx + menuW, my + menuH)) {
-		hoveredOption = floor((mouse_y - my) / optionH);
-	}
-	for (var i = 0; i < array_length(menu_actions); i++) {
-		var y1 = my + i * optionH;
-		if (i == hoveredOption) {
-			draw_set_alpha(0.35);
-			draw_set_color(c_yellow);
-			draw_rectangle(mx + 1, y1 + 1, mx + menuW - 1, y1 + optionH - 1, false);
-			draw_set_alpha(1);
-		}
-		draw_set_color(c_white);
-		draw_text(mx + 8, y1 + 4, menu_actions[i].label);
-	}
-}
 	
-	
-	//Press Button
-if (point_in_rectangle(mouse_x, mouse_y, CameraX() + 440, CameraY() + 435, CameraX() + 520, CameraY() + 470) == true && mouse_check_button_pressed(mb_left)) {
-	show_message("Button pressed.");
-}
-
-
-
-
-
-
-
-
 

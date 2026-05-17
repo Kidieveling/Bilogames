@@ -40,14 +40,38 @@ TileBlockedByObject = function(_tile_x, _tile_y, _object) {
     return false
 }
 
+SetFacingFromVector = function(_move_x, _move_y) {
+    if (_move_x == 0 && _move_y > 0) {
+        facing_dir = 0
+    } else if (_move_x > 0 && _move_y > 0) {
+        facing_dir = 1
+    } else if (_move_x > 0 && _move_y == 0) {
+        facing_dir = 2
+    } else if (_move_x > 0 && _move_y < 0) {
+        facing_dir = 3
+    } else if (_move_x == 0 && _move_y < 0) {
+        facing_dir = 4
+    } else if (_move_x < 0 && _move_y < 0) {
+        facing_dir = 5
+    } else if (_move_x < 0 && _move_y == 0) {
+        facing_dir = 6
+    } else if (_move_x < 0 && _move_y > 0) {
+        facing_dir = 7
+    }
+}
+
 moving = false
 target_x = x
 target_y = y
+click_path = []
+click_path_index = 0
 pending_click_move = false
 pending_click_target = noone
 pending_click_action = ""
 pending_click_action_label = ""
 pending_context_target = noone
+pending_context_x = 0
+pending_context_y = 0
 
 move_x = 0
 move_y = 0
