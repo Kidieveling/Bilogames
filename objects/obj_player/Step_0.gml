@@ -1,4 +1,12 @@
 // Read input every frame
+if (instance_exists(obj_dialogue) && obj_dialogue.active) {
+    exit;
+}
+
+if (instance_exists(obj_dialogue) && obj_dialogue.input_cooldown > 0) {
+    exit;
+}
+
 var input_x = keyboard_check(ord("D")) - keyboard_check(ord("A"))
 var input_y = keyboard_check(ord("S")) - keyboard_check(ord("W"))
 
@@ -92,4 +100,23 @@ if (moving) {
     }
 } else {
     image_index = facing_dir * walk_frames
+}
+
+var npc = instance_nearest(x, y, obj_npc);
+if (npc != noone) {
+    if (point_distance(x, y, npc.x, npc.y) <= tile_size && keyboard_check_pressed(ord("E"))) {
+        pending_dialogue_npc = npc;
+    }
+}
+
+if (!moving && pending_dialogue_npc != noone) {
+    if (instance_exists(pending_dialogue_npc)) {
+        if (point_distance(x, y, pending_dialogue_npc.x, pending_dialogue_npc.y) <= tile_size) {
+            with (pending_dialogue_npc) {
+                interact(other);
+            }
+        }
+    }
+    
+    pending_dialogue_npc = noone;
 }

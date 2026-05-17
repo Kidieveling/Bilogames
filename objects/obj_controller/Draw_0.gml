@@ -108,25 +108,8 @@ if (isShowingMenu) {
 	draw_sprite(spr_inventoryFront, 0, inventoryX, inventoryY + 20);
 	draw_sprite(spr_scrollIndicator, 0, inventoryLeft + sprite_get_width(spr_inventoryBackDrop) - 25, inventoryTop + 380);
 	
-	//Sort Type
-	draw_set_alpha(1);
-	draw_set_color(c_white);
-	draw_set_font(fntSmaller);
-	if (sortType == SortType.Name) {
-		draw_text(inventoryLeft + 37, inventoryTop + 397, "Sorting by Name");
-	}
-	if (sortType == SortType.Amount) {
-		draw_text(inventoryLeft + 37, inventoryTop + 397, "Sorting by Amount");
-	}
-	if (sortType == SortType.Price) {
-		draw_text(inventoryLeft + 37, inventoryTop + 397, "Sorting by Price");
-	}
-	if (sortType == SortType.Type) {
-		draw_text(inventoryLeft + 37, inventoryTop + 397, "Sorting by Type");
-	}
-	if (hoveredItem != undefined && hoveredItem != noone) {
-		DrawHoverItemDetails(hoveredItem);
-	}
+
+	
 	
 	//Press Button
 	if (point_in_rectangle(mouse_x, mouse_y, CameraX() + 440, CameraY() + 435, CameraX() + 520, CameraY() + 470) == true && mouse_check_button_pressed(mb_left)) {

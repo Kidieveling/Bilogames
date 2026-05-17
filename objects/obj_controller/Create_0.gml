@@ -73,4 +73,4 @@ DrawHoverItemDetails = function(_item) {
 	}
 };
 
-AddItem(myItems, ["Bronze Axe", spr_bronze_axe, 1, Type.Tool, 5, obj_bronze_axe]);
+

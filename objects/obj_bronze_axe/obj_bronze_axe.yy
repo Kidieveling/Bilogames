@@ -8,8 +8,8 @@
   "name":"obj_bronze_axe",
   "overriddenProperties":[],
   "parent":{
-    "name":"Objects",
-    "path":"folders/Objects.yy",
+    "name":"Items",
+    "path":"folders/Objects/Items.yy",
   },
   "parentObjectId":{
     "name":"objItemParent",
