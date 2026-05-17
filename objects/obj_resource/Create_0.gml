@@ -1,4 +1,4 @@
-depth = 25
+depth = -y
 
 if (!variable_global_exists("woodcutting_level")) {
 	global.woodcutting_level = 1

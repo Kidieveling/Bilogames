@@ -58,6 +58,16 @@ if (!moving) {
         ) {
             blocked = true
         }
+        
+        var next_tile_x = TileXFromPosition(next_x)
+        var next_tile_y = TileYFromBottom(next_y)
+        
+        if (TileBlockedByObject(next_tile_x, next_tile_y, obj_npc)) {
+            blocked = true
+        }
+        if (TileBlockedByObject(next_tile_x, next_tile_y, obj_resource)) {
+            blocked = true
+        }
 
         if (!blocked) {
             target_x = next_x
@@ -166,3 +176,5 @@ if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
         }
     }
 }
+
+depth = -y
