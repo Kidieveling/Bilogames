@@ -26,20 +26,23 @@ if (!moving) {
         // This still happens even if the tile is blocked
         if (buffer_x == 0 && buffer_y > 0) {
             facing_dir = 0 // south
-        } else if (buffer_x < 0 && buffer_y > 0) {
-            facing_dir = 1 // southwest
-        } else if (buffer_x < 0 && buffer_y == 0) {
-            facing_dir = 2 // west
+        } else if (buffer_x > 0 && buffer_y > 0) {
+            facing_dir = 1 // southeast
+        } else if (buffer_x > 0 && buffer_y == 0) {
+            facing_dir = 2 // east
         } else if (buffer_x > 0 && buffer_y < 0) {
             facing_dir = 3 // northeast
         } else if (buffer_x == 0 && buffer_y < 0) {
             facing_dir = 4 // north
         } else if (buffer_x < 0 && buffer_y < 0) {
             facing_dir = 5 // northwest
-        } else if (buffer_x > 0 && buffer_y == 0) {
-            facing_dir = 6 // east
+        } else if (buffer_x < 0 && buffer_y == 0) {
+            facing_dir = 6 // west
+        } else if (buffer_x < 0 && buffer_y > 0) {
+            facing_dir = 7 // southwest
+
         } else if (buffer_x > 0 && buffer_y > 0) {
-            facing_dir = 7 // southeast
+            facing_dir = 1 // southeast
         }
 
         var blocked = false
@@ -88,18 +91,17 @@ if (moving) {
             buffer_y = 0
         }
 
-        image_index = facing_dir * walk_frames
+        image_index = facing_dir
     } else {
         var dir = point_direction(x, y, target_x, target_y)
 
         x += lengthdir_x(move_speed, dir)
         y += lengthdir_y(move_speed, dir)
 
-        var walk_frame = floor(current_time / 100) mod walk_frames
-        image_index = facing_dir * walk_frames + walk_frame
+        image_index = facing_dir
     }
 } else {
-    image_index = facing_dir * walk_frames
+    image_index = facing_dir
 }
 
 var npc = instance_nearest(x, y, obj_npc);

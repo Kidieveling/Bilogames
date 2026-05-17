@@ -13,7 +13,7 @@ buffer_y = 0
 pending_dialogue_npc = noone
 
 facing_dir = 0
-walk_frames = 4
+walk_frames = 1
 
 image_speed = 0
 depth = 0

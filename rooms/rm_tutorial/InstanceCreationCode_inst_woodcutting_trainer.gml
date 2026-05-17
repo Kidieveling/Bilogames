@@ -1,3 +1,5 @@
+sprite_index = spr_woodcutting_trainer
+
 npc_name = "Woodcutting Trainer"
 npc_text = "Want to learn about woodcutting?"
 dialogue_text = npc_name + ": " + npc_text
