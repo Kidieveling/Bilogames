@@ -2,9 +2,11 @@
 
 myItems = ds_grid_create(0, Item.Height);
 
-isShowingMenu = false;
 currentItem = undefined;
 currentItemSlot = undefined;
+menuTabInventory = 0;
+menuTabSpells = 1;
+selectedMenuTab = menuTabInventory;
 menuWidth = 6;
 menuHeight = 48;
 itemSeperation = 38;
@@ -46,8 +48,23 @@ DrawHoverItemDetails = function(_item) {
 	
 	var panelWidth = 210;
 	var panelHeight = 126;
-	var panelX = clamp(mouse_x + 24, CameraX() + 8, CameraX() + viewWidth - panelWidth - 8);
-	var panelY = clamp(mouse_y + 24, CameraY() + 8, CameraY() + viewHeight - panelHeight - 8);
+	var panelGap = 12;
+	var viewLeft = CameraX();
+	var viewTop = CameraY();
+	var viewRight = viewLeft + viewWidth;
+	var viewBottom = viewTop + viewHeight;
+	var panelX = mouse_x + panelGap;
+	var panelY = mouse_y + panelGap;
+	
+	if (panelX + panelWidth > viewRight - 8) {
+		panelX = mouse_x - panelWidth - panelGap;
+	}
+	if (panelY + panelHeight > viewBottom - 8) {
+		panelY = mouse_y - panelHeight - panelGap;
+	}
+	
+	panelX = clamp(panelX, viewLeft + 8, viewRight - panelWidth - 8);
+	panelY = clamp(panelY, viewTop + 8, viewBottom - panelHeight - 8);
 	
 	draw_set_alpha(0.9);
 	draw_set_color(c_black);
