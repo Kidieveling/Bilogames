@@ -1,16 +1,16 @@
 {
   "$GMObject":"",
-  "%Name":"obj_simple_staff",
+  "%Name":"obj_resource",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_simple_staff",
+  "name":"obj_resource",
   "overriddenProperties":[],
   "parent":{
-    "name":"Items",
-    "path":"folders/Objects/Items.yy",
+    "name":"Resources",
+    "path":"folders/Objects/Items/Resources.yy",
   },
   "parentObjectId":null,
   "persistent":false,
@@ -31,12 +31,9 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_simple_staff",
-    "path":"sprites/spr_simple_staff/spr_simple_staff.yy",
+    "name":"spr_resource",
+    "path":"sprites/spr_resource/spr_resource.yy",
   },
-  "spriteMaskId":{
-    "name":"spr_simple_staff",
-    "path":"sprites/spr_simple_staff/spr_simple_staff.yy",
-  },
+  "spriteMaskId":null,
   "visible":true,
 }

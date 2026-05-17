@@ -1,18 +1,21 @@
 {
   "$GMObject":"",
-  "%Name":"obj_tree_spawn",
+  "%Name":"obj_normal_log",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
-    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_tree_spawn",
+  "name":"obj_normal_log",
   "overriddenProperties":[],
   "parent":{
     "name":"Resources",
     "path":"folders/Objects/Items/Resources.yy",
   },
-  "parentObjectId":null,
+  "parentObjectId":{
+    "name":"objItemParent",
+    "path":"objects/objItemParent/objItemParent.yy",
+  },
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,
@@ -31,9 +34,12 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_tree_spawn",
-    "path":"sprites/spr_tree_spawn/spr_tree_spawn.yy",
+    "name":"spr_normal_log",
+    "path":"sprites/spr_normal_log/spr_normal_log.yy",
   },
-  "spriteMaskId":null,
+  "spriteMaskId":{
+    "name":"spr_normal_log",
+    "path":"sprites/spr_normal_log/spr_normal_log.yy",
+  },
   "visible":true,
 }

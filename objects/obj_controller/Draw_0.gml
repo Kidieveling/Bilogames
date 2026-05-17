@@ -58,6 +58,11 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 	
 	//Items
 	if (selectedMenuTab == menuTabInventory) {
+		var itemHoveredThisFrame = false;
+		var slotSize = 32;
+		var slotDrawSize = 30;
+		var slotHalf = slotSize / 2;
+		
 		for(var i = 0; i < ds_grid_width(myItems); ++i) {
 			var itemColumn = i mod menuWidth;
 			var itemRow = i div menuWidth;
@@ -65,8 +70,12 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 			var itemY = menuTop + 83 + (itemRow * 36);
 			var sprite = myItems[# i, Item.Sprite];
 			
-			var drawScale = min(itemScale, 32 / max(sprite_get_width(sprite), sprite_get_height(sprite)));
-			draw_sprite_ext(sprite, 0, itemX, itemY, drawScale, drawScale, 0, c_white, 1);
+			var spriteWidth = sprite_get_width(sprite);
+			var spriteHeight = sprite_get_height(sprite);
+			var drawScale = min(itemScale, slotDrawSize / max(spriteWidth, spriteHeight));
+			var drawX = itemX + ((sprite_get_xoffset(sprite) - (spriteWidth / 2)) * drawScale);
+			var drawY = itemY + ((sprite_get_yoffset(sprite) - (spriteHeight / 2)) * drawScale);
+			draw_sprite_ext(sprite, 0, drawX, drawY, drawScale, drawScale, 0, c_white, 1);
 			
 			//Amount
 			draw_set_color(c_white);
@@ -75,26 +84,34 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 			draw_text(itemX - 16, itemY + 4, myItems[# i, Item.Amount]);
 			
 			//Check if mouse is hovering over an item
-			var itemHoverPadding = 16;
-			if (point_in_rectangle(mouse_x, mouse_y, itemX - itemHoverPadding, itemY - itemHoverPadding, itemX + itemHoverPadding, itemY + itemHoverPadding)) {
+			if (point_in_rectangle(mouse_x, mouse_y, itemX - slotHalf, itemY - slotHalf, itemX + slotHalf, itemY + slotHalf)) {
+				itemHoveredThisFrame = true;
 				draw_set_alpha(0.25);
 				draw_set_color(c_blue);
-				draw_rectangle(itemX - itemHoverPadding, itemY - itemHoverPadding, itemX + itemHoverPadding, itemY + itemHoverPadding, false);
+				draw_rectangle(itemX - slotHalf, itemY - slotHalf, itemX + slotHalf, itemY + slotHalf, false);
 				draw_set_alpha(1);
 				currentItemSlot = i;
 				
 				//Draw item info
-				if (instance_exists(myItems[# i, Item.Object]) == false && draggingItem == false && itemLocked == false) {
+				if (draggingItem == false && itemLocked == false && (hoveredItemSlot != i || currentItem == undefined || instance_exists(currentItem) == false)) {
+					if (instance_exists(objItemParent)) {
+						instance_destroy(objItemParent);
+					}
 					currentItem = instance_create_layer(-32, -32, "MenuItems", myItems[# i, Item.Object]);
 					currentItem.price = myItems[# i, Item.Price];
 					currentItem.type = myItems[# i, Item.Type];
 					currentItem.name = myItems[# i, Item.Name];
 					currentItem.isInMenu = true;
+					hoveredItemSlot = i;
 				}
-				if (instance_exists(myItems[# i, Item.Object])) {
-					hoveredItem = instance_find(myItems[# i, Item.Object], 0);
+				if (currentItem != undefined && instance_exists(currentItem)) {
+					hoveredItem = currentItem;
 				}
 			}
+		}
+		
+		if (itemHoveredThisFrame == false && draggingItem == false) {
+			hoveredItemSlot = undefined;
 		}
 	}
 	else {

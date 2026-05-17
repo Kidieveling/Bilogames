@@ -107,9 +107,18 @@ if (moving) {
 }
 
 var npc = instance_nearest(x, y, obj_npc);
-if (npc != noone) {
-    if (!dialogue_blocking_input && point_distance(x, y, npc.x, npc.y) <= tile_size && keyboard_check_pressed(ord("E"))) {
+var npc_in_range = npc != noone && point_distance(x, y, npc.x, npc.y) <= tile_size;
+if (npc_in_range) {
+    if (!dialogue_blocking_input && keyboard_check_pressed(ord("E"))) {
         pending_dialogue_npc = npc;
+    }
+}
+
+var resource = instance_nearest(x, y, obj_resource);
+var resource_in_range = resource != noone && point_distance(x, y, resource.x, resource.y) <= tile_size;
+if (!npc_in_range && resource_in_range) {
+    if (!dialogue_blocking_input && keyboard_check_pressed(ord("E"))) {
+        pending_resource = resource;
     }
 }
 
@@ -125,12 +134,30 @@ if (!dialogue_blocking_input && !moving && pending_dialogue_npc != noone) {
     pending_dialogue_npc = noone;
 }
 
+if (!dialogue_blocking_input && !moving && pending_resource != noone) {
+    if (instance_exists(pending_resource)) {
+        if (point_distance(x, y, pending_resource.x, pending_resource.y) <= tile_size) {
+            with (pending_resource) {
+                interact(other);
+            }
+        }
+    }
+    
+    pending_resource = noone;
+}
+
 if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
     var prompt_npc = instance_nearest(x, y, obj_npc);
+    var prompt_resource = instance_nearest(x, y, obj_resource);
     
     if (prompt_npc != noone && point_distance(x, y, prompt_npc.x, prompt_npc.y) <= tile_size) {
         with (obj_dialogue) {
             prompt("[E] Talk to " + prompt_npc.npc_name);
+        }
+    }
+    else if (prompt_resource != noone && point_distance(x, y, prompt_resource.x, prompt_resource.y) <= tile_size) {
+        with (obj_dialogue) {
+            prompt("[E] " + prompt_resource.resource_action + " " + prompt_resource.resource_name);
         }
     }
     else {

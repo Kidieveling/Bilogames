@@ -11,6 +11,7 @@ move_y = 0
 buffer_x = 0
 buffer_y = 0
 pending_dialogue_npc = noone
+pending_resource = noone
 
 facing_dir = 0
 walk_frames = 1

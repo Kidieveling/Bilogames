@@ -4,6 +4,7 @@ myItems = ds_grid_create(0, Item.Height);
 
 currentItem = undefined;
 currentItemSlot = undefined;
+hoveredItemSlot = undefined;
 menuTabInventory = 0;
 menuTabSpells = 1;
 selectedMenuTab = menuTabInventory;
@@ -78,14 +79,14 @@ DrawHoverItemDetails = function(_item) {
 	draw_text(panelX + 10, panelY + 8, _item.name);
 	draw_text(panelX + 10, panelY + 28, GetItemTypeName(_item.type) + "  |  " + string(_item.price) + " gold");
 	
-	if (_item.damage != undefined) {
+	if (variable_instance_exists(_item, "damage") && _item.damage != undefined) {
 		draw_text(panelX + 10, panelY + 48, "Damage: " + string(_item.damage));
 	}
-	if (_item.defense != undefined) {
+	if (variable_instance_exists(_item, "defense") && _item.defense != undefined) {
 		draw_text(panelX + 10, panelY + 48, "Defense: " + string(_item.defense));
 	}
 	
-	if (_item.description != undefined) {
+	if (variable_instance_exists(_item, "description") && _item.description != undefined) {
 		draw_text_ext(panelX + 10, panelY + 70, _item.description, 16, panelWidth - 20);
 	}
 };

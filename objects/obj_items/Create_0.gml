@@ -49,6 +49,7 @@ global.AllItems = ds_grid_create(0, Item.Height)
 
 AddItemToMasterList(["Bronze Axe", spr_bronze_axe, 1, Type.Tool, 5, obj_bronze_axe])
 AddItemToMasterList(["Simple Staff", spr_simple_staff, 1 , Type.Weapon, 10, obj_simple_staff])
+AddItemToMasterList(["Normal Log", spr_normal_log, 1, Type.Consumable, 1, obj_normal_log])
 
 
 
