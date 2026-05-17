@@ -54,7 +54,6 @@
     {"id":{"name":"fntSmaller","path":"fonts/fntSmaller/fntSmaller.yy",},},
     {"id":{"name":"obj_bronze_axe","path":"objects/obj_bronze_axe/obj_bronze_axe.yy",},},
     {"id":{"name":"obj_bronze_pickaxe","path":"objects/obj_bronze_pickaxe/obj_bronze_pickaxe.yy",},},
-    {"id":{"name":"obj_context_menu","path":"objects/obj_context_menu/obj_context_menu.yy",},},
     {"id":{"name":"obj_controller","path":"objects/obj_controller/obj_controller.yy",},},
     {"id":{"name":"obj_copper_bar","path":"objects/obj_copper_bar/obj_copper_bar.yy",},},
     {"id":{"name":"obj_copper_ore","path":"objects/obj_copper_ore/obj_copper_ore.yy",},},

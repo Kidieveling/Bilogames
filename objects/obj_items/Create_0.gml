@@ -1,5 +1,10 @@
 /// @description Master Item Object
 
+if (instance_number(obj_items) > 1) {
+	instance_destroy()
+	exit
+}
+
 //All Item Properties
 enum Item {
 	Name,

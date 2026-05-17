@@ -75,7 +75,6 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 	
 	//Items
 	if (selectedMenuTab == menuTabInventory) {
-		var itemHoveredThisFrame = false;
 		var slotSize = 34;
 		var slotDrawSize = 28;
 		var slotHalf = slotSize / 2;
@@ -123,30 +122,11 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 			
 			//Check if mouse is hovering over an item
 			if (itemIsHovered) {
-				itemHoveredThisFrame = true;
 				draw_set_alpha(1);
-				currentItemSlot = i;
-				
-				//Draw item info
-				if (draggingItem == false && itemLocked == false && (hoveredItemSlot != i || currentItem == undefined || instance_exists(currentItem) == false)) {
-					if (instance_exists(objItemParent)) {
-						instance_destroy(objItemParent);
-					}
-					currentItem = instance_create_layer(-32, -32, "MenuItems", myItems[# i, Item.Object]);
-					currentItem.price = myItems[# i, Item.Price];
-					currentItem.type = myItems[# i, Item.Type];
-					currentItem.name = myItems[# i, Item.Name];
-					currentItem.isInMenu = true;
-					hoveredItemSlot = i;
-				}
 				if (currentItem != undefined && instance_exists(currentItem)) {
 					hoveredItem = currentItem;
 				}
 			}
-		}
-		
-		if (itemHoveredThisFrame == false && draggingItem == false) {
-			hoveredItemSlot = undefined;
 		}
 	}
 	else if (selectedMenuTab == menuTabSpells) {
@@ -185,32 +165,41 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 		draw_set_alpha(1);
 		draw_set_font(fntSmaller);
 		
-		var questX = menuLeft + 34;
-		var questY = menuTop + 52;
-		var questW = 228;
-		var questH = 86;
-		var questState = global.quest_woodcutting_state;
-		var questProgress = GetWoodcuttingQuestProgress();
-		var questRequired = global.quest_woodcutting_required_logs;
-		var questProgressAmount = clamp(questProgress / max(1, questRequired), 0, 1);
-		var questStatus = "Not started";
-		if (questState == 1) {
-			questStatus = "Active";
-		}
-		if (questState == 2) {
-			questStatus = "Complete";
-			questProgress = questRequired;
-			questProgressAmount = 1;
-		}
+		var questX = menuLeft + 30;
+		var questY = menuTop + 46;
+		var questW = 236;
+		var questH = 214;
+		var questInfo = GetWoodcuttingQuestInfo();
 		
-		draw_sprite_stretched(spr_ui_skill_row, 0, questX, questY, questW, questH);
+		draw_set_alpha(0.78);
+		draw_set_color(c_black);
+		draw_rectangle(questX, questY, questX + questW, questY + questH, false);
+		draw_set_alpha(0.9);
 		draw_set_color(c_white);
-		draw_text(questX + 12, questY + 8, "Approval: Timber Duty");
-		draw_text(questX + 12, questY + 28, questStatus);
-		draw_text(questX + 12, questY + 46, "Normal Logs: " + string(questProgress) + " / " + string(questRequired));
-		draw_sprite_stretched(spr_ui_xp_bar_back, 0, questX + 14, questY + 68, 200, 11);
-		if (questProgressAmount > 0) {
-			draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * questProgressAmount), sprite_get_height(spr_ui_xp_bar_fill), questX + 14, questY + 68, 200 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
+		draw_rectangle(questX, questY, questX + questW, questY + questH, true);
+		draw_set_alpha(1);
+		
+		draw_set_color(c_white);
+		draw_text(questX + 12, questY + 8, questInfo.title);
+		
+		draw_set_color(c_yellow);
+		draw_text(questX + 12, questY + 30, "Status: " + questInfo.status);
+		
+		draw_set_color(c_white);
+		draw_text(questX + 12, questY + 56, "Objective");
+		draw_text_ext(questX + 12, questY + 72, questInfo.objective, 16, questW - 24);
+		
+		draw_set_color(c_yellow);
+		draw_text(questX + 12, questY + 112, "Return: " + questInfo.return_to);
+		
+		draw_set_color(c_white);
+		draw_text(questX + 12, questY + 136, "Rewards");
+		draw_text_ext(questX + 12, questY + 152, questInfo.rewards, 16, questW - 24);
+		
+		draw_text(questX + 12, questY + 178, "Normal Logs: " + string(questInfo.progress) + " / " + string(questInfo.required));
+		draw_sprite_stretched(spr_ui_xp_bar_back, 0, questX + 14, questY + 196, 208, 11);
+		if (questInfo.progress_amount > 0) {
+			draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * questInfo.progress_amount), sprite_get_height(spr_ui_xp_bar_fill), questX + 14, questY + 196, 208 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
 		}
 	}
 	
@@ -220,38 +209,6 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 		draw_set_color(c_red);
 		draw_rectangle(lockedItemX - 16, lockedItemY - 16, lockedItemX + 16, lockedItemY + 16, false);
 		draw_set_alpha(1);
-	}
-	
-	//Dragging System
-	if (selectedMenuTab == menuTabInventory) {
-		if (mouse_check_button(mb_middle)) {
-			draggedItem = instance_find(objItemParent, 0);
-			if (draggedItem != noone) {
-				draggedItem.x = mouse_x;
-				draggedItem.y = mouse_y;
-				draggedItem.visible = true;
-				draggedItem.image_xscale = itemScale;
-				draggedItem.image_yscale = itemScale;
-				draggingItem = true;
-			}
-		}
-		if (mouse_check_button_pressed(mb_middle)) {
-			draggedItemSlot = currentItemSlot;
-		}
-		if (mouse_check_button_released(mb_middle) && draggedItem != undefined && draggedItem != noone) {
-			draggedItem.x = -100;
-			draggedItem.y = -100;
-			draggingItem = false;
-			alarm[0] = 1;
-		}
-	}
-	else {
-		draggingItem = false;
-	}
-	
-	//Ensure only 1 item exists at a time
-	if (instance_number(objItemParent) > 1) {
-		instance_destroy(objItemParent);
 	}
 	
 	//Front of the inventory

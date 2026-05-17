@@ -3,6 +3,10 @@
 /// @param Attributes An array of the Item enum attributes
 /// 
 
+function InventoryDebugLog(message) {
+	show_debug_message("[Inventory] " + string(message))
+}
+
 function HasItem(grid, item_name) {
 	for (var i = 0; i < ds_grid_width(grid); i++) {
 		if (grid[# i, Item.Name] == item_name) {
@@ -25,7 +29,7 @@ function GetItemAmount(grid, item_name) {
 
 function RemoveItem(grid, item_name, amount) {
 	if (ds_exists(grid, ds_type_grid) == false) {
-		show_message("No grid found.")
+		InventoryDebugLog("No grid found.")
 		return false
 	}
 	if (is_undefined(amount)) {
@@ -61,11 +65,19 @@ function AddItem(grid, attributes) {
 	
 	//First Check - are the arguments acceptable?
 	if (ds_exists(grid, ds_type_grid) == false) {
-		show_message("No grid found.")
+		InventoryDebugLog("No grid found.")
 		return false
 	}
 	if (is_array(attributes) == false || array_length(attributes) != Item.Height) {
-		show_message("Wrong attributes.")
+		InventoryDebugLog("Wrong attributes.")
+		return false
+	}
+	if (variable_global_exists("AllItems") == false) {
+		InventoryDebugLog("No variable found called AllItems.")
+		return false
+	}
+	if (ds_exists(global.AllItems, ds_type_grid) == false) {
+		InventoryDebugLog("No AllItems DS grid found.")
 		return false
 	}
 	
@@ -77,7 +89,7 @@ function AddItem(grid, attributes) {
 		}
 	}
 	if (isInMasterList == false) {
-		show_message("Cannot find this item")
+		InventoryDebugLog("Cannot find this item: " + string(attributes[Item.Name]))
 		return false;
 	}
 	
@@ -124,17 +136,17 @@ function AddItemToMasterList(attributes){
 	
 	//Does the global variable exist?
 	if (variable_global_exists("AllItems") == false) {
-		show_message("No variable found called allitems.")
+		InventoryDebugLog("No variable found called AllItems.")
 		return
 	}
 	//Is the global variable a ds grid?
 	if (ds_exists(global.AllItems, ds_type_grid) == false) {
-		show_message("No ds grid found");
+		InventoryDebugLog("No AllItems DS grid found.");
 		return
 	}
 	//Are the attributes proper?
 	if (is_array(attributes) == false || array_length(attributes) != Item.Height) {
-		show_message("Input for adding items isn't right.");
+		InventoryDebugLog("Input for adding items isn't right.");
 		return;
 	}
 	

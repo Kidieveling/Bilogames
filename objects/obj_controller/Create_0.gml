@@ -26,13 +26,10 @@ lockedItemX = undefined;
 lockedItemY = undefined;
 window_set_cursor(cr_none);
 
-context_menu = noone;
 menu_open = false;
 menu_target = noone;
 menu_world_x = 0;
 menu_world_y = 0;
-menu_gui_x = 0;
-menu_gui_y = 0;
 menu_actions = [];
 menu_width = 132;
 menu_option_height = 22;
@@ -123,6 +120,9 @@ if (!variable_global_exists("welcomer_approval_started")) {
 if (!variable_global_exists("welcomer_woodcutting_approved")) {
 	global.welcomer_woodcutting_approved = false;
 }
+if (!variable_global_exists("welcomer_woodcutting_acknowledged")) {
+	global.welcomer_woodcutting_acknowledged = false;
+}
 
 StartWoodcuttingQuest = function() {
 	if (global.quest_woodcutting_state == 0) {
@@ -149,6 +149,58 @@ CompleteWoodcuttingQuest = function() {
 	global.welcomer_woodcutting_approved = true;
 	AddSkillXP("Woodcutting", 50);
 	return true;
+};
+
+GetWoodcuttingQuestInfo = function() {
+	var questState = global.quest_woodcutting_state;
+	var questProgress = GetWoodcuttingQuestProgress();
+	var questRequired = global.quest_woodcutting_required_logs;
+	var questProgressAmount = clamp(questProgress / max(1, questRequired), 0, 1);
+	var questStatus = "Not Started";
+	var questObjective = "Speak with the Welcomer.";
+	var questReturnTo = "Welcomer";
+	var questRewards = "Bronze Axe + 50 WC XP + approval";
+	
+	if (global.welcomer_approval_started && questState == 0) {
+		questObjective = "Speak with the Woodcutting Trainer.";
+		questReturnTo = "Woodcutting Trainer";
+	}
+	
+	if (questState == 1) {
+		questStatus = "Active";
+		questReturnTo = "Woodcutting Trainer";
+		
+		if (questProgress >= questRequired) {
+			questObjective = "Return the logs.";
+		} else {
+			questObjective = "Collect " + string(questRequired) + " Normal Logs.";
+		}
+	}
+	
+	if (questState == 2) {
+		questStatus = "Complete";
+		questProgress = questRequired;
+		questProgressAmount = 1;
+		questObjective = "Report back to the Welcomer.";
+		questReturnTo = "Welcomer";
+		questRewards = "50 WC XP + timber approval earned";
+		
+		if (global.welcomer_woodcutting_acknowledged) {
+			questObjective = "Next: speak with the Mining Trainer.";
+			questReturnTo = "Mining Trainer";
+		}
+	}
+	
+	return {
+		title: "Approval: Timber Duty",
+		status: questStatus,
+		objective: questObjective,
+		return_to: questReturnTo,
+		rewards: questRewards,
+		progress: questProgress,
+		required: questRequired,
+		progress_amount: questProgressAmount
+	};
 };
 
 SnapPointToTileCenter = function(_x, _y) {
@@ -363,46 +415,6 @@ StartTilePathMove = function(_player, _path_points) {
 	return true;
 };
 
-FindBestInteractionTile = function(_player, _target, _range_tiles) {
-	if (!instance_exists(_player) || !instance_exists(_target)) {
-		return {found: false, x: 0, y: 0};
-	}
-	
-	var target_tile_x = _player.InstanceTileX(_target);
-	var target_tile_y = _player.InstanceTileY(_target);
-	var best_found = false;
-	var best_x = _target.x;
-	var best_y = _target.y;
-	var best_score = 100000000;
-	var search_radius = max(1, _range_tiles);
-	
-	for (var dx = -search_radius; dx <= search_radius; dx++) {
-		for (var dy = -search_radius; dy <= search_radius; dy++) {
-			if (dx == 0 && dy == 0) {
-				continue;
-			}
-			
-			var tx = target_tile_x + dx;
-			var ty = target_tile_y + dy;
-			if (!IsTileWalkable(tx, ty)) {
-				continue;
-			}
-			
-			var px = TileCenterX(tx);
-			var py = TileCenterY(ty);
-			var tile_score = point_distance(_player.x, _player.y, px, py);
-			if (!best_found || tile_score < best_score) {
-				best_found = true;
-				best_score = tile_score;
-				best_x = px;
-				best_y = py;
-			}
-		}
-	}
-	
-	return {found: best_found, x: best_x, y: best_y};
-};
-
 IsInInteractionRange = function(_a, _b, _tiles) {
 	if (!instance_exists(_a) || !instance_exists(_b)) {
 		return false;
@@ -558,8 +570,6 @@ OpenContextMenu = function(_target, _x, _y) {
 	menu_target = _target;
 	menu_world_x = _x;
 	menu_world_y = _y;
-	menu_gui_x = _x;
-	menu_gui_y = _y;
 	menu_actions = [{ label: "Move here", action: "move_here" }];
 	if (instance_exists(_target)) {
 		if (_target.object_index == obj_npc) {
@@ -582,7 +592,6 @@ OpenContextMenu = function(_target, _x, _y) {
 };
 
 CloseContextMenu = function() {
-	context_menu = noone;
 	menu_open = false;
 	menu_target = noone;
 	menu_actions = [];

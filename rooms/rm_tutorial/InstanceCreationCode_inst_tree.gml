@@ -1,5 +1,9 @@
 sprite_index = spr_tree_spawn
 
+if (!variable_global_exists("rng_seeded")) {
+	randomize()
+	global.rng_seeded = true
+}
 
 resource_name = "Normal Tree"
 resource_action = "Chop"

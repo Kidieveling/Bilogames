@@ -1,5 +1,10 @@
 window_set_fullscreen(true);
 
+if (!variable_global_exists("rng_seeded")) {
+	randomize();
+	global.rng_seeded = true;
+}
+
 global.tile_size = 32;
 
 global.woodcutting_level = 1;

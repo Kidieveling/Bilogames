@@ -1,5 +1,9 @@
 sprite_index = spr_ore_spawn
 
+if (!variable_global_exists("rng_seeded")) {
+	randomize()
+	global.rng_seeded = true
+}
 
 resource_name = "Copper Node"
 resource_action = "Swing Pickaxe"

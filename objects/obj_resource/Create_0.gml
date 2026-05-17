@@ -1,5 +1,10 @@
 depth = -y
 
+if (!variable_global_exists("rng_seeded")) {
+	randomize()
+	global.rng_seeded = true
+}
+
 if (!variable_global_exists("woodcutting_level")) {
 	global.woodcutting_level = 1
 }
@@ -38,9 +43,9 @@ gather_cooldown = 0
 gather_cooldown_max = 30
 gathering_active = false
 gathering_player = noone
-resource_amount_available = 5
 resource_amount_min = 3
 resource_amount_max = 6
+resource_amount_available = irandom_range(resource_amount_min, resource_amount_max)
 success_chance = 75
 depleted = false
 depleted_sprite = spr_resource
