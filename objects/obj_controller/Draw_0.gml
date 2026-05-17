@@ -9,7 +9,6 @@ if (view_camera[0] >= 0) {
 }
 
 draw_set_alpha(1);
-draw_sprite(spr_HUD, 0, CameraX() + sprite_get_xoffset(spr_HUD), CameraY() + sprite_get_yoffset(spr_HUD));
 draw_sprite(spr_skillBar, 0, CameraMiddleX(), CameraY() + viewHeight - sprite_get_yoffset(spr_skillBar) - 12);
 
 draw_set_font(fntSmaller);
@@ -27,25 +26,22 @@ var hoveredItem = undefined;
 //Back of the menu
 draw_set_alpha(1);
 var menuMargin = 16;
-var menuX = CameraX() + viewWidth - sprite_get_width(spr_inventoryBackDrop) / 2 - menuMargin;
-var menuY = CameraY() + viewHeight - sprite_get_height(spr_inventoryBackDrop) / 2 - menuMargin;
-var menuLeft = menuX - sprite_get_xoffset(spr_inventoryBackDrop);
-var menuTop = menuY - sprite_get_yoffset(spr_inventoryBackDrop);
-draw_sprite(spr_inventory, 0, menuX, menuY);
+var menuScale = 2;
+var menuLeft = CameraX() + viewWidth - 296 - menuMargin;
+var menuTop = CameraY() + viewHeight - 296 - menuMargin + 18;
+var menuX = menuLeft;
+var menuY = menuTop;
+
+draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_white, 1);
 	
-	if (selectedMenuTab == menuTabInventory) {
-		draw_sprite(spr_inventoryBackDrop, 0, menuX, menuY);
-	}
-	else {
-		draw_sprite(spr_spellMenu, 0, menuX, menuY);
-	}
-	
-	var tabY1 = menuTop + 42;
-	var tabY2 = tabY1 + 26;
-	var inventoryTabX1 = menuLeft + 32;
-	var inventoryTabX2 = inventoryTabX1 + 88;
-	var spellsTabX1 = inventoryTabX2 + 8;
-	var spellsTabX2 = spellsTabX1 + 72;
+	var tabY1 = menuTop - 27;
+	var tabY2 = tabY1 + 28;
+	var inventoryTabX1 = menuLeft + 30;
+	var inventoryTabW = 100;
+	var inventoryTabX2 = inventoryTabX1 + inventoryTabW;
+	var spellsTabX1 = inventoryTabX2 + 10;
+	var spellsTabW = 88;
+	var spellsTabX2 = spellsTabX1 + spellsTabW;
 	
 	draw_set_font(fntSmaller);
 	draw_set_alpha(1);
@@ -55,50 +51,68 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 	else {
 		draw_set_color(c_gray);
 	}
-	draw_rectangle(inventoryTabX1, tabY1, inventoryTabX2, tabY2, true);
-	draw_text(inventoryTabX1 + 10, tabY1 + 7, "Inventory");
+	draw_sprite_stretched(spr_ui_tab, 0, inventoryTabX1, tabY1, inventoryTabW, 28);
+	draw_text(inventoryTabX1 + (inventoryTabW - string_width("Inventory")) / 2, tabY1 + 8, "Inventory");
 	if (selectedMenuTab == menuTabSpells) {
 		draw_set_color(c_white);
 	}
 	else {
 		draw_set_color(c_gray);
 	}
-	draw_rectangle(spellsTabX1, tabY1, spellsTabX2, tabY2, true);
-	draw_text(spellsTabX1 + 10, tabY1 + 7, "Spells");
+	draw_sprite_stretched(spr_ui_tab, 0, spellsTabX1, tabY1, spellsTabW, 28);
+	draw_text(spellsTabX1 + (spellsTabW - string_width("Skills")) / 2, tabY1 + 8, "Skills");
 	
 	//Items
 	if (selectedMenuTab == menuTabInventory) {
 		var itemHoveredThisFrame = false;
-		var slotSize = 32;
-		var slotDrawSize = 30;
+		var slotSize = 34;
+		var slotDrawSize = 28;
 		var slotHalf = slotSize / 2;
+		var visibleInventorySlots = 30;
+		var slotScale = 1;
+		var slotSpacingX = 37;
+		var slotSpacingY = 37;
+		var inventoryGridX = menuLeft + 38;
+		var inventoryGridY = menuTop + 50;
+		
+		for (var slot = 0; slot < visibleInventorySlots; slot++) {
+			var slotColumn = slot mod menuWidth;
+			var slotRow = slot div menuWidth;
+			var slotX = inventoryGridX + (slotColumn * slotSpacingX);
+			var slotY = inventoryGridY + (slotRow * slotSpacingY);
+			draw_sprite_ext(spr_ui_slot, 0, slotX, slotY, slotScale, slotScale, 0, c_white, 1);
+		}
 		
 		for(var i = 0; i < ds_grid_width(myItems); ++i) {
 			var itemColumn = i mod menuWidth;
 			var itemRow = i div menuWidth;
-			var itemX = menuLeft + 43 + (itemColumn * itemSeperation);
-			var itemY = menuTop + 83 + (itemRow * 36);
+			var itemSlotX = inventoryGridX + (itemColumn * slotSpacingX);
+			var itemSlotY = inventoryGridY + (itemRow * slotSpacingY);
+			var itemX = itemSlotX + 16;
+			var itemY = itemSlotY + 16;
 			var sprite = myItems[# i, Item.Sprite];
+			var itemIsHovered = point_in_rectangle(mouse_x, mouse_y, itemX - slotHalf, itemY - slotHalf, itemX + slotHalf, itemY + slotHalf);
+			
+			if (itemIsHovered) {
+				draw_sprite(spr_ui_slot_selected, 0, itemSlotX - 3, itemSlotY - 3);
+			}
 			
 			var spriteWidth = sprite_get_width(sprite);
 			var spriteHeight = sprite_get_height(sprite);
 			var drawScale = min(itemScale, slotDrawSize / max(spriteWidth, spriteHeight));
-			var drawX = itemX + ((sprite_get_xoffset(sprite) - (spriteWidth / 2)) * drawScale);
-			var drawY = itemY + ((sprite_get_yoffset(sprite) - (spriteHeight / 2)) * drawScale);
+			var drawX = itemX - ((spriteWidth / 2) * drawScale) + (sprite_get_xoffset(sprite) * drawScale);
+			var drawY = itemY - ((spriteHeight / 2) * drawScale) + (sprite_get_yoffset(sprite) * drawScale);
 			draw_sprite_ext(sprite, 0, drawX, drawY, drawScale, drawScale, 0, c_white, 1);
 			
 			//Amount
 			draw_set_color(c_white);
 			draw_set_alpha(1);
 			draw_set_font(fntSmaller);
-			draw_text(itemX - 16, itemY + 4, myItems[# i, Item.Amount]);
+			draw_text(itemX - 12, itemY + 5, myItems[# i, Item.Amount]);
 			
 			//Check if mouse is hovering over an item
-			if (point_in_rectangle(mouse_x, mouse_y, itemX - slotHalf, itemY - slotHalf, itemX + slotHalf, itemY + slotHalf)) {
+			if (itemIsHovered) {
 				itemHoveredThisFrame = true;
-				draw_set_alpha(0.25);
-				draw_set_color(c_blue);
-				draw_rectangle(itemX - slotHalf, itemY - slotHalf, itemX + slotHalf, itemY + slotHalf, false);
 				draw_set_alpha(1);
 				currentItemSlot = i;
 				
@@ -127,8 +141,34 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 	else {
 		draw_set_alpha(1);
 		draw_set_font(fntSmaller);
-		draw_set_color(c_white);
-		draw_text(menuLeft + 44, menuTop + 88, "No spells learned.");
+		
+		var skillSlotX = menuLeft + 34;
+		var skillSlotY = menuTop + 52;
+		var skillSlotW = 228;
+		var skillSlotH = 58;
+		var skillSlotGap = 12;
+		
+		var skillNames = ["Woodcutting", "Mining", "Smelting"];
+		for (var s = 0; s < array_length(skillNames); s++) {
+			var skillName = skillNames[s];
+			var skillLevel = GetSkillLevel(skillName);
+			var skillXP = GetSkillXP(skillName);
+			var nextXP = SkillXPForNextLevel(skillLevel);
+			var slotTop = skillSlotY + (s * (skillSlotH + skillSlotGap));
+			var progressAmount = clamp(skillXP / max(1, nextXP), 0, 1);
+			
+			draw_sprite_stretched(spr_ui_skill_row, 0, skillSlotX, slotTop, skillSlotW, 56);
+			
+			draw_set_alpha(1);
+			draw_set_color(c_white);
+			draw_text(skillSlotX + 12, slotTop + 7, skillName + " Lv. " + string(skillLevel));
+			draw_text(skillSlotX + 12, slotTop + 25, string(skillXP) + " / " + string(nextXP) + " XP");
+			
+			draw_sprite_stretched(spr_ui_xp_bar_back, 0, skillSlotX + 14, slotTop + 42, 200, 11);
+			if (progressAmount > 0) {
+				draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * progressAmount), sprite_get_height(spr_ui_xp_bar_fill), skillSlotX + 14, slotTop + 42, 200 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
+			}
+		}
 	}
 	
 	//Draw locked item
@@ -173,13 +213,45 @@ draw_sprite(spr_inventory, 0, menuX, menuY);
 	
 	//Front of the inventory
 	if (selectedMenuTab == menuTabInventory) {
-		draw_sprite(spr_inventoryFront, 0, menuX, menuY + 20);
-		draw_sprite(spr_scrollIndicator, 0, menuLeft + sprite_get_width(spr_inventoryBackDrop) - 25, menuTop + 380);
+		draw_sprite_stretched(spr_ui_xp_bar_back, 0, menuLeft + 30, menuTop + 250, 236, 11);
 	}
 	
-	if (selectedMenuTab == menuTabInventory && hoveredItem != undefined && hoveredItem != noone) {
-		DrawHoverItemDetails(hoveredItem);
+if (selectedMenuTab == menuTabInventory && hoveredItem != undefined && hoveredItem != noone) {
+	DrawHoverItemDetails(hoveredItem);
+}
+
+if (menu_open && instance_exists(menu_target) && array_length(menu_actions) > 0) {
+	var rect = GetContextMenuRect();
+	var mx = rect.x;
+	var my = rect.y;
+	var menuW = rect.w;
+	var optionH = rect.option_h;
+	var menuH = rect.h;
+	draw_set_alpha(0.95);
+	draw_set_color(c_yellow);
+	draw_rectangle(mx - 4, my - 4, mx + menuW + 4, my + menuH + 4, false);
+	draw_set_alpha(1);
+	draw_set_color(c_black);
+	draw_rectangle(mx, my, mx + menuW, my + menuH, false);
+	draw_set_color(c_white);
+	draw_rectangle(mx, my, mx + menuW, my + menuH, true);
+	draw_set_font(fntSmaller);
+	var hoveredOption = -1;
+	if (point_in_rectangle(mouse_x, mouse_y, mx, my, mx + menuW, my + menuH)) {
+		hoveredOption = floor((mouse_y - my) / optionH);
 	}
+	for (var i = 0; i < array_length(menu_actions); i++) {
+		var y1 = my + i * optionH;
+		if (i == hoveredOption) {
+			draw_set_alpha(0.35);
+			draw_set_color(c_yellow);
+			draw_rectangle(mx + 1, y1 + 1, mx + menuW - 1, y1 + optionH - 1, false);
+			draw_set_alpha(1);
+		}
+		draw_set_color(c_white);
+		draw_text(mx + 8, y1 + 4, menu_actions[i].label);
+	}
+}
 	
 	
 	//Press Button

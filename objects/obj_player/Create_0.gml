@@ -43,6 +43,11 @@ TileBlockedByObject = function(_tile_x, _tile_y, _object) {
 moving = false
 target_x = x
 target_y = y
+pending_click_move = false
+pending_click_target = noone
+pending_click_action = ""
+pending_click_action_label = ""
+pending_context_target = noone
 
 move_x = 0
 move_y = 0
@@ -51,6 +56,7 @@ buffer_x = 0
 buffer_y = 0
 pending_dialogue_npc = noone
 pending_resource = noone
+npc_talk_cooldown = 0
 
 facing_dir = 0
 walk_frames = 1

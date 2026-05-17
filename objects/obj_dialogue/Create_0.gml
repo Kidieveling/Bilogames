@@ -63,5 +63,8 @@ hide = function() {
 	text = "";
 	choices = [];
 	choice_index = 0;
-	input_cooldown = 2;
+	input_cooldown = 12;
+	with (obj_player) {
+		npc_talk_cooldown = 18;
+	}
 };

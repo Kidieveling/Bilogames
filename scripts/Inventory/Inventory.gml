@@ -213,7 +213,15 @@ function ArrayContains(array, number) {
 }
 
 function SkillXPForNextLevel(level) {
-	return level * level * 100
+	return SkillTotalXPForLevel(level + 1) - SkillTotalXPForLevel(level)
+}
+
+function SkillTotalXPForLevel(level) {
+	var points = 0
+	for (var i = 1; i < level; i++) {
+		points += floor(i + 300 * power(2, i / 7))
+	}
+	return floor(points / 4)
 }
 
 function SkillExists(skill_name) {
@@ -282,6 +290,7 @@ function AddSkillXP(skill_name, amount) {
 	var new_level = old_level
 	
 	while (new_xp >= SkillXPForNextLevel(new_level)) {
+		new_xp -= SkillXPForNextLevel(new_level)
 		new_level += 1
 	}
 	
