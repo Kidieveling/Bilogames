@@ -12,12 +12,20 @@ if (!variable_global_exists("mining_level")) {
 if (!variable_global_exists("mining_xp")) {
 	global.mining_xp = 0
 }
+if (!variable_global_exists("smelting_level")) {
+	global.smelting_level = 1
+}
+if (!variable_global_exists("smelting_xp")) {
+	global.smelting_xp = 0
+}
 
 resource_name = "UPDATE Resource"
 resource_action = "Gather"
 resource_skill = ""
 required_level = 1
 required_tool_name = ""
+required_resource_name = ""
+required_resource_amount = 1
 item_name = ""
 item_sprite = -1
 item_amount = 1
@@ -45,6 +53,13 @@ interact = function(_player) {
 		return
 	}
 	
+	if (!SkillExists(resource_skill)) {
+		with (obj_dialogue) {
+			notify("UPDATE: This resource needs a valid skill.", 90)
+		}
+		return
+	}
+	
 	if (required_tool_name != "" && !HasItem(obj_controller.myItems, required_tool_name)) {
 		with (obj_dialogue) {
 			notify("You need a " + other.required_tool_name + " to use this.", 90)
@@ -52,22 +67,7 @@ interact = function(_player) {
 		return
 	}
 	
-	var skill_level = 1
-	switch (resource_skill) {
-		case "Woodcutting":
-			skill_level = global.woodcutting_level
-		break
-		
-		case "Mining":
-			skill_level = global.mining_level
-		break
-		
-		default:
-			with (obj_dialogue) {
-				notify("UPDATE: This resource needs a valid skill.", 90)
-			}
-			return
-	}
+	var skill_level = GetSkillLevel(resource_skill)
 	
 	if (skill_level < required_level) {
 		with (obj_dialogue) {
@@ -76,23 +76,44 @@ interact = function(_player) {
 		return
 	}
 	
-	with (obj_controller) {
-		AddItem(myItems, [other.item_name, other.item_sprite, other.item_amount, other.item_type, other.item_price, other.item_object])
+	if (required_resource_name != "" && GetItemAmount(obj_controller.myItems, required_resource_name) < required_resource_amount) {
+		with (obj_dialogue) {
+			notify("You need " + string(other.required_resource_amount) + " " + other.required_resource_name + " to use this.", 90)
+		}
+		return
 	}
 	
-	switch (resource_skill) {
-		case "Woodcutting":
-			global.woodcutting_xp += xp_reward
-		break
-		
-		case "Mining":
-			global.mining_xp += xp_reward
-		break
+	var item_added = AddItem(obj_controller.myItems, [item_name, item_sprite, item_amount, item_type, item_price, item_object])
+	
+	if (!item_added) {
+		with (obj_dialogue) {
+			notify("Your inventory is full.", 90)
+		}
+		return
 	}
+	
+	if (required_resource_name != "") {
+		RemoveItem(obj_controller.myItems, required_resource_name, required_resource_amount)
+	}
+	
+	var leveled_up = AddSkillXP(resource_skill, xp_reward)
 	
 	gather_cooldown = gather_cooldown_max
 	
 	with (obj_dialogue) {
-		notify("You get " + string(other.item_amount) + " " + other.item_name + ".", 90)
+		var xp_text = " +" + string(other.xp_reward) + " " + other.resource_skill + " XP."
+		if (other.required_resource_name != "") {
+			if (leveled_up) {
+				notify("You smelt " + other.required_resource_name + " into " + other.item_name + "." + xp_text + " Level up!", 120)
+			} else {
+				notify("You smelt " + other.required_resource_name + " into " + other.item_name + "." + xp_text, 90)
+			}
+		} else {
+			if (leveled_up) {
+				notify("You get " + string(other.item_amount) + " " + other.item_name + "." + xp_text + " Level up!", 120)
+			} else {
+				notify("You get " + string(other.item_amount) + " " + other.item_name + "." + xp_text, 90)
+			}
+		}
 	}
 }

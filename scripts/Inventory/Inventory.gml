@@ -13,18 +13,60 @@ function HasItem(grid, item_name) {
 	return false
 }
 
+function GetItemAmount(grid, item_name) {
+	for (var i = 0; i < ds_grid_width(grid); i++) {
+		if (grid[# i, Item.Name] == item_name) {
+			return grid[# i, Item.Amount]
+		}
+	}
+	
+	return 0
+}
+
+function RemoveItem(grid, item_name, amount) {
+	if (ds_exists(grid, ds_type_grid) == false) {
+		show_message("No grid found.")
+		return false
+	}
+	if (is_undefined(amount)) {
+		amount = 1
+	}
+	
+	for (var i = 0; i < ds_grid_width(grid); i++) {
+		if (grid[# i, Item.Name] == item_name) {
+			if (grid[# i, Item.Amount] > amount) {
+				grid[# i, Item.Amount] -= amount
+			} else {
+				for (var j = i; j < ds_grid_width(grid) - 1; j++) {
+					for (var k = 0; k < Item.Height; k++) {
+						grid[# j, k] = grid[# j + 1, k]
+					}
+				}
+				ds_grid_resize(grid, ds_grid_width(grid) - 1, ds_grid_height(grid))
+			}
+			return true
+		}
+	}
+	
+	return false
+}
+
 
 function AddItem(grid, attributes) {
 	var canStack = true
+	var inventoryLimit = 40
+	if (instance_exists(obj_controller)) {
+		inventoryLimit = obj_controller.maxInventorySlots
+	}
 	
 	//First Check - are the arguments acceptable?
 	if (ds_exists(grid, ds_type_grid) == false) {
 		show_message("No grid found.")
-		return
+		return false
 	}
 	if (is_array(attributes) == false || array_length(attributes) != Item.Height) {
 		show_message("Wrong attributes.")
-		return
+		return false
 	}
 	
 	//Second Check - is this item in the master list?
@@ -36,7 +78,7 @@ function AddItem(grid, attributes) {
 	}
 	if (isInMasterList == false) {
 		show_message("Cannot find this item")
-		return;
+		return false;
 	}
 	
 	//Third check - Can it stack?
@@ -46,7 +88,7 @@ function AddItem(grid, attributes) {
 			for(var i = 0; i < attributes[Item.Amount]; ++i) {
 				AddItem(grid, [attributes[Item.Name], attributes[Item.Sprite], 1, attributes[Item.Type], attributes[Item.Price], attributes[Item.Object]]);
 			}
-			return;
+			return true;
 		}
 	}
 	
@@ -56,14 +98,14 @@ function AddItem(grid, attributes) {
 			if (attributes[Item.Name] == grid[# i, Item.Name]) {
 				//It's in here, so add amount to item in grid
 				grid[# i, Item.Amount] += attributes[Item.Amount]
-				return
+				return true
 			}
 		}
 	}
 	
 	//Fifth Check - do I have space?
-	if (maxInventorySlots <= ds_grid_width(grid)) {
-		return
+	if (inventoryLimit <= ds_grid_width(grid)) {
+		return false
 	}
 	
 	//Sixth Check - Not in the grid, so add it
@@ -71,6 +113,8 @@ function AddItem(grid, attributes) {
 	for(var i = 0; i < array_length(attributes); ++i) {
 		grid[# ds_grid_width(grid) - 1, i] = attributes[i]
 	}
+	
+	return true
 	
 }
 
@@ -166,6 +210,85 @@ function ArrayContains(array, number) {
 		}
 	}
 	return false
+}
+
+function SkillXPForNextLevel(level) {
+	return level * level * 100
+}
+
+function SkillExists(skill_name) {
+	switch (skill_name) {
+		case "Woodcutting":
+		case "Mining":
+		case "Smelting":
+			return true
+	}
+	return false
+}
+
+function GetSkillLevel(skill_name) {
+	switch (skill_name) {
+		case "Woodcutting": return global.woodcutting_level
+		case "Mining": return global.mining_level
+		case "Smelting": return global.smelting_level
+	}
+	return 1
+}
+
+function GetSkillXP(skill_name) {
+	switch (skill_name) {
+		case "Woodcutting": return global.woodcutting_xp
+		case "Mining": return global.mining_xp
+		case "Smelting": return global.smelting_xp
+	}
+	return 0
+}
+
+function SetSkillLevel(skill_name, level) {
+	switch (skill_name) {
+		case "Woodcutting":
+			global.woodcutting_level = level
+		break
+		
+		case "Mining":
+			global.mining_level = level
+		break
+		
+		case "Smelting":
+			global.smelting_level = level
+		break
+	}
+}
+
+function SetSkillXP(skill_name, xp) {
+	switch (skill_name) {
+		case "Woodcutting":
+			global.woodcutting_xp = xp
+		break
+		
+		case "Mining":
+			global.mining_xp = xp
+		break
+		
+		case "Smelting":
+			global.smelting_xp = xp
+		break
+	}
+}
+
+function AddSkillXP(skill_name, amount) {
+	var old_level = GetSkillLevel(skill_name)
+	var new_xp = GetSkillXP(skill_name) + amount
+	var new_level = old_level
+	
+	while (new_xp >= SkillXPForNextLevel(new_level)) {
+		new_level += 1
+	}
+	
+	SetSkillXP(skill_name, new_xp)
+	SetSkillLevel(skill_name, new_level)
+	
+	return new_level > old_level
 }
 
 

@@ -5,6 +5,7 @@ resource_action = "Smelt"
 resource_skill = "Smelting"
 required_level = 1
 required_resource_name = "Copper Ore"
+required_resource_amount = 1
 item_name = "Copper Bar"
 item_sprite = spr_copper_bar
 item_amount = 1

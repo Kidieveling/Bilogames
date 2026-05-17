@@ -36,7 +36,7 @@ show = function(_text, _choices) {
 };
 
 prompt = function(_text) {
-	if (!active) {
+	if (!active && notice_timer <= 0) {
 		prompt_text = _text;
 		prompt_active = true;
 	}
@@ -50,7 +50,9 @@ clear_prompt = function() {
 };
 
 notify = function(_text, _duration) {
-	if (!active && !prompt_active) {
+	if (!active) {
+		prompt_active = false;
+		prompt_text = "";
 		notice_text = _text;
 		notice_timer = _duration;
 	}

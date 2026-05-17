@@ -12,6 +12,16 @@ draw_set_alpha(1);
 draw_sprite(spr_HUD, 0, CameraX() + sprite_get_xoffset(spr_HUD), CameraY() + sprite_get_yoffset(spr_HUD));
 draw_sprite(spr_skillBar, 0, CameraMiddleX(), CameraY() + viewHeight - sprite_get_yoffset(spr_skillBar) - 12);
 
+draw_set_font(fntSmaller);
+draw_set_color(c_white);
+var skillTextY = CameraY() + viewHeight - sprite_get_yoffset(spr_skillBar) - 22;
+var woodcuttingNextXP = SkillXPForNextLevel(global.woodcutting_level);
+var miningNextXP = SkillXPForNextLevel(global.mining_level);
+var smeltingNextXP = SkillXPForNextLevel(global.smelting_level);
+draw_text(CameraMiddleX() - 220, skillTextY, "Woodcutting " + string(global.woodcutting_level) + "  " + string(global.woodcutting_xp) + "/" + string(woodcuttingNextXP));
+draw_text(CameraMiddleX() - 40, skillTextY, "Mining " + string(global.mining_level) + "  " + string(global.mining_xp) + "/" + string(miningNextXP));
+draw_text(CameraMiddleX() + 110, skillTextY, "Smelting " + string(global.smelting_level) + "  " + string(global.smelting_xp) + "/" + string(smeltingNextXP));
+
 var hoveredItem = undefined;
 	
 //Back of the menu
