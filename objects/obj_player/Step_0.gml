@@ -1,14 +1,16 @@
 // Read input every frame
-if (instance_exists(obj_dialogue) && obj_dialogue.active) {
-    exit;
+var dialogue_blocking_input = false
+if (instance_exists(obj_dialogue)) {
+    dialogue_blocking_input = obj_dialogue.active || obj_dialogue.input_cooldown > 0
 }
 
-if (instance_exists(obj_dialogue) && obj_dialogue.input_cooldown > 0) {
-    exit;
-}
+var input_x = 0
+var input_y = 0
 
-var input_x = keyboard_check(ord("D")) - keyboard_check(ord("A"))
-var input_y = keyboard_check(ord("S")) - keyboard_check(ord("W"))
+if (!dialogue_blocking_input) {
+    input_x = keyboard_check(ord("D")) - keyboard_check(ord("A"))
+    input_y = keyboard_check(ord("S")) - keyboard_check(ord("W"))
+}
 
 // Store latest held direction, including diagonals
 if (input_x != 0 || input_y != 0) {
@@ -106,12 +108,12 @@ if (moving) {
 
 var npc = instance_nearest(x, y, obj_npc);
 if (npc != noone) {
-    if (point_distance(x, y, npc.x, npc.y) <= tile_size && keyboard_check_pressed(ord("E"))) {
+    if (!dialogue_blocking_input && point_distance(x, y, npc.x, npc.y) <= tile_size && keyboard_check_pressed(ord("E"))) {
         pending_dialogue_npc = npc;
     }
 }
 
-if (!moving && pending_dialogue_npc != noone) {
+if (!dialogue_blocking_input && !moving && pending_dialogue_npc != noone) {
     if (instance_exists(pending_dialogue_npc)) {
         if (point_distance(x, y, pending_dialogue_npc.x, pending_dialogue_npc.y) <= tile_size) {
             with (pending_dialogue_npc) {
@@ -121,4 +123,19 @@ if (!moving && pending_dialogue_npc != noone) {
     }
     
     pending_dialogue_npc = noone;
+}
+
+if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
+    var prompt_npc = instance_nearest(x, y, obj_npc);
+    
+    if (prompt_npc != noone && point_distance(x, y, prompt_npc.x, prompt_npc.y) <= tile_size) {
+        with (obj_dialogue) {
+            prompt("[E] Talk to " + prompt_npc.npc_name);
+        }
+    }
+    else {
+        with (obj_dialogue) {
+            clear_prompt();
+        }
+    }
 }

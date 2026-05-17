@@ -14,7 +14,7 @@ npc_choices = [
 				}
 
 				with (obj_dialogue) {
-					show("Magic Trainer: Take this Staff and runes and practice on some enemmies", [])
+					show("Magic Trainer: Take this Staff and defeat a few enemies", [])
 				}
 			} else {
 				with (obj_dialogue) {

@@ -3,6 +3,9 @@
 if (input_cooldown > 0) {
 	input_cooldown -= 1;
 }
+if (notice_timer > 0) {
+	notice_timer -= 1;
+}
 
 if (active) {
 	if (keyboard_check_pressed(ord("W"))) {
