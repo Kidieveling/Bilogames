@@ -79,7 +79,7 @@ if (!dialogue_blocking_input && mouse_check_button_pressed(mb_left)) {
 		if (mouse_over_fixed_ui) {
 			// Fixed UI handles this click.
 		} else if (clicked_target != noone) {
-			if (clicked_target.object_index == obj_npc) {
+			if (obj_controller.IsNpcTarget(clicked_target)) {
 				if (npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, clicked_target, 1)) {
 					with (clicked_target) {
 						interact(other)
@@ -162,7 +162,7 @@ if (!moving) {
         var next_tile_x = TileXFromPosition(next_x)
         var next_tile_y = TileYFromBottom(next_y)
         
-        if (TileBlockedByObject(next_tile_x, next_tile_y, obj_npc)) {
+        if (obj_controller.TileBlockedByNpc(next_tile_x, next_tile_y)) {
             blocked = true
         }
         if (TileBlockedByObject(next_tile_x, next_tile_y, obj_resource)) {
@@ -212,7 +212,7 @@ if (moving) {
             ) {
                 next_click_blocked = true
             }
-            if (TileBlockedByObject(next_click_tile_x, next_click_tile_y, obj_npc)) {
+            if (obj_controller.TileBlockedByNpc(next_click_tile_x, next_click_tile_y)) {
                 next_click_blocked = true
             }
             if (TileBlockedByObject(next_click_tile_x, next_click_tile_y, obj_resource)) {
@@ -291,7 +291,7 @@ if (!moving && pending_click_target != noone) {
     }
 }
 
-var npc = instance_nearest(x, y, obj_npc);
+var npc = obj_controller.GetNearestNpcTarget(x, y);
 var npc_in_range = npc != noone && obj_controller.IsInInteractionRange(id, npc, 1);
 if (npc_in_range) {
     if (!dialogue_blocking_input && npc_talk_cooldown <= 0 && keyboard_check_pressed(ord("E"))) {
@@ -345,7 +345,7 @@ if (!dialogue_blocking_input && !moving && pending_resource != noone) {
 }
 
 if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
-    var prompt_npc = instance_nearest(x, y, obj_npc);
+    var prompt_npc = obj_controller.GetNearestNpcTarget(x, y);
     var prompt_resource = noone;
     var prompt_resource_distance = 100000000;
     for (var prompt_resource_index = 0; prompt_resource_index < instance_number(obj_resource); prompt_resource_index++) {
@@ -361,7 +361,7 @@ if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
         }
     }
     
-    if (hover_target != noone && hover_target.object_index == obj_npc) {
+    if (hover_target != noone && obj_controller.IsNpcTarget(hover_target)) {
         with (obj_dialogue) {
             prompt(obj_controller.FormatTargetPrompt("Click", hover_target));
         }

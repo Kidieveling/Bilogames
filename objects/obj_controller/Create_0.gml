@@ -34,6 +34,7 @@ menu_actions = [];
 menu_width = 132;
 menu_option_height = 22;
 interaction_range_tiles = 1;
+npc_target_objects = [obj_npc, obj_woodcutting_trainer];
 
 GetFixedUIRect = function() {
 	var viewWidth = room_width;
@@ -92,7 +93,7 @@ FormatTargetPrompt = function(_prefix, _target) {
 		return "";
 	}
 	
-	if (_target.object_index == obj_npc) {
+	if (IsNpcTarget(_target)) {
 		return _prefix + " to talk to " + _target.npc_name;
 	}
 	
@@ -106,6 +107,59 @@ FormatTargetPrompt = function(_prefix, _target) {
 	}
 	
 	return "";
+};
+
+ArrayContainsValue = function(_array, _value) {
+	for (var i = 0; i < array_length(_array); i++) {
+		if (_array[i] == _value) {
+			return true;
+		}
+	}
+	return false;
+};
+
+IsNpcTarget = function(_target) {
+	if (!instance_exists(_target)) {
+		return false;
+	}
+	if (ArrayContainsValue(npc_target_objects, _target.object_index)) {
+		return true;
+	}
+	return variable_instance_exists(_target, "is_npc") && _target.is_npc;
+};
+
+TileBlockedByNpc = function(_tile_x, _tile_y) {
+	var player = instance_find(obj_player, 0);
+	if (!instance_exists(player)) {
+		return false;
+	}
+	
+	for (var i = 0; i < array_length(npc_target_objects); i++) {
+		if (player.TileBlockedByObject(_tile_x, _tile_y, npc_target_objects[i])) {
+			return true;
+		}
+	}
+	
+	return false;
+};
+
+GetNearestNpcTarget = function(_x, _y) {
+	var nearest = noone;
+	var nearest_distance = 100000000;
+	
+	for (var c = 0; c < array_length(npc_target_objects); c++) {
+		var obj = npc_target_objects[c];
+		for (var i = 0; i < instance_number(obj); i++) {
+			var inst = instance_find(obj, i);
+			var dist = point_distance(_x, _y, inst.x, inst.y);
+			if (dist < nearest_distance) {
+				nearest = inst;
+				nearest_distance = dist;
+			}
+		}
+	}
+	
+	return nearest;
 };
 
 if (!variable_global_exists("quest_woodcutting_state")) {
@@ -226,7 +280,7 @@ IsTileWalkable = function(_tile_x, _tile_y, _avoid_objects) {
 		return false;
 	}
 	if (_avoid_objects) {
-		if (player.TileBlockedByObject(_tile_x, _tile_y, obj_npc)) {
+		if (TileBlockedByNpc(_tile_x, _tile_y)) {
 			return false;
 		}
 		if (player.TileBlockedByObject(_tile_x, _tile_y, obj_resource)) {
@@ -455,7 +509,12 @@ GetContextMenuRect = function() {
 GetInteractTargetAtPoint = function(_mx, _my) {
 	var best = noone;
 	var best_depth = 1000000;
-	var candidates = [obj_npc, obj_resource];
+	var candidates = array_create(array_length(npc_target_objects) + 1);
+	for (var n = 0; n < array_length(npc_target_objects); n++) {
+		candidates[n] = npc_target_objects[n];
+	}
+	candidates[array_length(candidates) - 1] = obj_resource;
+	
 	for (var c = 0; c < array_length(candidates); c++) {
 		var obj = candidates[c];
 		for (var i = 0; i < instance_number(obj); i++) {
@@ -572,7 +631,7 @@ OpenContextMenu = function(_target, _x, _y) {
 	menu_world_y = _y;
 	menu_actions = [{ label: "Move here", action: "move_here" }];
 	if (instance_exists(_target)) {
-		if (_target.object_index == obj_npc) {
+		if (IsNpcTarget(_target)) {
 			menu_actions = [
 				{ label: "Talk-to", action: "npc_talk" },
 				{ label: "Move here", action: "move_here" }

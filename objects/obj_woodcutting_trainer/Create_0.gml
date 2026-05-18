@@ -1,4 +1,4 @@
-sprite_index = spr_woodcutting_trainer
+is_npc = true
 
 if (!variable_global_exists("welcomer_approval_started")) {
 	global.welcomer_approval_started = false
