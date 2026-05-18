@@ -14,28 +14,28 @@ if (!variable_global_exists("quest_woodcutting_state")) {
 }
 
 npc_name = "Welcomer"
-npc_text = "Easy now. You are inside the settlement, which means someone important decided you were worth the risk."
+npc_text = "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. For now, you are Markless: not condemned, not cleared."
 dialogue_text = npc_name + ": " + npc_text
 
 GetWelcomerGreeting = function() {
 	if (!global.welcomer_approval_started) {
-		return "Welcomer: Easy now. You are inside the settlement, which means someone important decided you were worth the risk."
+		return "Welcomer: Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. For now, you are Markless: not condemned, not cleared."
 	}
 	
 	if (global.quest_woodcutting_state == 0) {
-		return "Welcomer: Your approval path is open. Start with timber work so the trainers can see you finish something useful."
+		return "Welcomer: Your Second Chance Trial is open. Start with the Timber Mark so the trainers can see you finish something useful."
 	}
 	
 	if (global.quest_woodcutting_state == 1) {
-		return "Welcomer: Still on timber duty? Good. Simple work reveals complicated people."
+		return "Welcomer: Still working toward your Timber Mark? Good. Simple work reveals complicated people."
 	}
 	
 	if (global.welcomer_woodcutting_approved && !global.welcomer_woodcutting_acknowledged) {
-		return "Welcomer: The Woodcutting Trainer marked your timber duty approved. That is your first real mark here."
+		return "Welcomer: The Woodcutting Trainer approved your Timber Mark. That is your first real mark here."
 	}
 	
 	if (global.welcomer_woodcutting_approved) {
-		return "Welcomer: Timber approval is recorded. Next, prove you can pull useful metal out of stubborn ground."
+		return "Welcomer: Timber Mark recorded. Next, prove you can pull useful metal out of stubborn ground."
 	}
 	
 	return npc_name + ": " + npc_text
@@ -46,13 +46,13 @@ BuildWelcomerChoices = function() {
 	
 	if (!global.welcomer_approval_started) {
 		array_push(choices, {
-			text: "What happens now?",
+			text: "What does Markless mean?",
 			action: function() {
 				global.welcomer_approval_started = true
 				
 				with (obj_dialogue) {
 					show(
-						"Welcomer: You earn approval from the trainers. Each one watches a different kind of work: timber, ore, tools, and whatever else keeps this place standing. Get their approval, then come back when the settlement has reason to trust you.",
+						"Welcomer: It means no record we can trust, no trade mark we can honor, and no standing inside these walls. Not guilty. Not safe. Unproven.",
 						[]
 					)
 				}
@@ -60,13 +60,27 @@ BuildWelcomerChoices = function() {
 		})
 		
 		array_push(choices, {
-			text: "How do I earn approval?",
+			text: "What happens now?",
 			action: function() {
 				global.welcomer_approval_started = true
 				
 				with (obj_dialogue) {
 					show(
-						"Welcomer: Speak with each trainer and complete the work they give you. You need their marks showing you can be useful without someone standing over you with a clipboard.",
+						"Welcomer: You are on a Second Chance Trial. Earn Marks from the trainers, finish useful work, and give Hearthmere reasons to keep trusting the risk.",
+						[]
+					)
+				}
+			}
+		})
+		
+		array_push(choices, {
+			text: "Who vouched for me?",
+			action: function() {
+				global.welcomer_approval_started = true
+				
+				with (obj_dialogue) {
+					show(
+						"Welcomer: Someone with enough weight to get you through the gate, and enough sense not to ask for more than that. Their name is not yours to spend yet.",
 						[]
 					)
 				}
@@ -80,7 +94,7 @@ BuildWelcomerChoices = function() {
 				
 				with (obj_dialogue) {
 					show(
-						"Welcomer: Start with the Woodcutting Trainer. Timber teaches the rhythm: get a tool, gather materials, finish the task, earn a mark.",
+						"Welcomer: Start with the Woodcutting Trainer. Timber teaches the rhythm: take a tool, gather what is needed, return with proof, earn your first Mark.",
 						[]
 					)
 				}
@@ -92,7 +106,7 @@ BuildWelcomerChoices = function() {
 			action: function() {
 				with (obj_dialogue) {
 					show(
-						"Welcomer: Woodcutting first. Speak with the Woodcutting Trainer, take the work seriously, and bring back proof that you can finish a simple task.",
+						"Welcomer: Woodcutting first. Speak with the Woodcutting Trainer, take the work seriously, and bring back proof that you can earn the Timber Mark.",
 						[]
 					)
 				}
@@ -118,7 +132,7 @@ BuildWelcomerChoices = function() {
 				
 				with (obj_dialogue) {
 					show(
-						"Welcomer: I heard. Timber approval is recorded. Next, speak with the Mining Trainer. Wood keeps us standing, but ore keeps our tools from becoming expensive sticks.",
+						"Welcomer: I heard. Timber Mark recorded. Next, speak with the Mining Trainer. Wood keeps us standing, but ore keeps our tools from becoming expensive sticks.",
 						[]
 					)
 				}
@@ -142,7 +156,7 @@ BuildWelcomerChoices = function() {
 			action: function() {
 				with (obj_dialogue) {
 					show(
-						"Welcomer: Timber approval is complete. That is one mark. Keep earning them and people here will stop calling you new. Eventually.",
+						"Welcomer: Timber Mark is complete. That is one mark. Keep earning them and people here will stop calling you new. Eventually.",
 						[]
 					)
 				}
