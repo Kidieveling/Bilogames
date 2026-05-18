@@ -20,6 +20,7 @@ if (!dialogue_blocking_input) {
 if (input_x != 0 || input_y != 0) {
     buffer_x = input_x
     buffer_y = input_y
+	walk_anim_hold = 12
     click_path = []
     click_path_index = 0
     pending_click_move = false
@@ -81,6 +82,7 @@ if (!dialogue_blocking_input && mouse_check_button_pressed(mb_left)) {
 		} else if (clicked_target != noone) {
 			if (obj_controller.IsNpcTarget(clicked_target)) {
 				if (npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, clicked_target, 1)) {
+					obj_controller.FaceNpcTowardPlayer(clicked_target, id)
 					with (clicked_target) {
 						interact(other)
 					}
@@ -260,11 +262,16 @@ if (moving) {
     image_index = facing_dir
 }
 
+if (walk_anim_hold > 0) {
+	walk_anim_hold -= 1;
+}
+
 if (!moving && pending_click_target != noone) {
 	if (instance_exists(pending_click_target)) {
 		if (obj_controller.IsInInteractionRange(id, pending_click_target, 1)) {
 			var pending_action_done = false
 			if (pending_click_action == "npc_talk" && npc_talk_cooldown <= 0) {
+				obj_controller.FaceNpcTowardPlayer(pending_click_target, id)
 				with (pending_click_target) {
 					interact(other)
 				}
@@ -323,6 +330,7 @@ if (!npc_in_range && resource_in_range) {
 if (!dialogue_blocking_input && !moving && pending_dialogue_npc != noone) {
     if (instance_exists(pending_dialogue_npc)) {
         if (npc_talk_cooldown <= 0 && obj_controller.IsInInteractionRange(id, pending_dialogue_npc, 1)) {
+			obj_controller.FaceNpcTowardPlayer(pending_dialogue_npc, id)
             with (pending_dialogue_npc) {
                 interact(other);
             }
@@ -345,9 +353,10 @@ if (!dialogue_blocking_input && !moving && pending_resource != noone) {
 }
 
 if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
-    var prompt_npc = obj_controller.GetNearestNpcTarget(x, y);
-    var prompt_resource = noone;
-    var prompt_resource_distance = 100000000;
+	var opening_prompt = StoryOpening_GetPromptText();
+	var prompt_npc = obj_controller.GetNearestNpcTarget(x, y);
+	var prompt_resource = noone;
+	var prompt_resource_distance = 100000000;
     for (var prompt_resource_index = 0; prompt_resource_index < instance_number(obj_resource); prompt_resource_index++) {
         var possible_prompt_resource = instance_find(obj_resource, prompt_resource_index);
         if (possible_prompt_resource.depleted) {
@@ -361,7 +370,12 @@ if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
         }
     }
     
-    if (hover_target != noone && obj_controller.IsNpcTarget(hover_target)) {
+	if (opening_prompt != "") {
+		with (obj_dialogue) {
+			prompt(opening_prompt);
+		}
+	}
+    else if (hover_target != noone && obj_controller.IsNpcTarget(hover_target)) {
         with (obj_dialogue) {
             prompt(obj_controller.FormatTargetPrompt("Click", hover_target));
         }
@@ -382,10 +396,18 @@ if (instance_exists(obj_dialogue) && !obj_dialogue.active) {
         }
     }
     else {
-        with (obj_dialogue) {
-            clear_prompt();
-        }
+		with (obj_dialogue) {
+			clear_prompt();
+		}
     }
 }
+
+var walking_anim_active = moving || input_x != 0 || input_y != 0 || pending_click_move || walk_anim_hold > 0;
+if (walking_anim_active) {
+	walk_anim_frame = (walk_anim_frame + walk_anim_speed) mod walk_frames;
+} else {
+	walk_anim_frame = 0;
+}
+image_index = (facing_dir * walk_frames) + floor(walk_anim_frame);
 
 depth = -y

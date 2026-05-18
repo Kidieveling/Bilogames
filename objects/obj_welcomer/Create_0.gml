@@ -1,4 +1,6 @@
+is_npc = true
 sprite_index = spr_welcome
+visible = true
 
 if (!variable_global_exists("welcomer_approval_started")) {
 	global.welcomer_approval_started = false
@@ -16,6 +18,32 @@ if (!variable_global_exists("quest_woodcutting_state")) {
 npc_name = "Welcomer"
 npc_text = "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. For now, you are Markless: not condemned, not cleared."
 dialogue_text = npc_name + ": " + npc_text
+image_speed = 0
+image_index = 0
+facing_dir = 0
+face_player_while_dialogue = false
+
+FaceTowardInstance = function(_target) {
+	if (!instance_exists(_target)) {
+		return
+	}
+	
+	var dir = point_direction(x, y, _target.x, _target.y)
+	var sector = floor(((dir + 22.5) mod 360) / 45)
+	
+	switch (sector) {
+		case 0: facing_dir = 2; break // east
+		case 1: facing_dir = 3; break // northeast
+		case 2: facing_dir = 4; break // north
+		case 3: facing_dir = 5; break // northwest
+		case 4: facing_dir = 6; break // west
+		case 5: facing_dir = 7; break // southwest
+		case 6: facing_dir = 0; break // south
+		case 7: facing_dir = 1; break // southeast
+	}
+	
+	image_index = facing_dir
+}
 
 GetWelcomerGreeting = function() {
 	if (!global.welcomer_approval_started) {
@@ -183,6 +211,12 @@ interact = function(_player) {
 		instance_create_layer(0, 0, "Instances", obj_dialogue)
 	}
 	
+	if (instance_exists(_player)) {
+		FaceTowardInstance(_player)
+	} else if (instance_exists(obj_player)) {
+		FaceTowardInstance(instance_find(obj_player, 0))
+	}
+	face_player_while_dialogue = true
 	dialogue_text = GetWelcomerGreeting()
 	npc_choices = BuildWelcomerChoices()
 	

@@ -83,7 +83,10 @@ pending_resource = noone
 npc_talk_cooldown = 0
 
 facing_dir = 0
-walk_frames = 1
+walk_frames = 4
+walk_anim_frame = 0
+walk_anim_speed = 0.08
+walk_anim_hold = 0
 
 image_speed = 0
 depth = 0

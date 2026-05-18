@@ -1,5 +1,7 @@
 /// @description Variables
 
+StoryOpening_InitGlobals();
+
 myItems = ds_grid_create(0, Item.Height);
 
 currentItem = undefined;
@@ -34,7 +36,7 @@ menu_actions = [];
 menu_width = 132;
 menu_option_height = 22;
 interaction_range_tiles = 1;
-npc_target_objects = [obj_npc, obj_woodcutting_trainer];
+npc_target_objects = [obj_npc, obj_welcomer, obj_woodcutting_trainer];
 
 GetFixedUIRect = function() {
 	var viewWidth = room_width;
@@ -128,6 +130,15 @@ IsNpcTarget = function(_target) {
 	return variable_instance_exists(_target, "is_npc") && _target.is_npc;
 };
 
+FaceNpcTowardPlayer = function(_target, _player) {
+	if (!instance_exists(_target) || !instance_exists(_player)) {
+		return;
+	}
+	if (variable_instance_exists(_target, "FaceTowardInstance")) {
+		_target.FaceTowardInstance(_player);
+	}
+};
+
 TileBlockedByNpc = function(_tile_x, _tile_y) {
 	var player = instance_find(obj_player, 0);
 	if (!instance_exists(player)) {
@@ -211,12 +222,12 @@ GetWoodcuttingQuestInfo = function() {
 	var questRequired = global.quest_woodcutting_required_logs;
 	var questProgressAmount = clamp(questProgress / max(1, questRequired), 0, 1);
 	var questStatus = "Not Started";
-	var questObjective = "Speak with the Welcomer.";
-	var questReturnTo = "Welcomer";
-	var questRewards = "Bronze Axe + 50 WC XP + approval";
+	var questObjective = StoryOpening_GetCurrentObjective();
+	var questReturnTo = StoryOpening_GetCurrentReturnTarget();
+	var questRewards = "Timber Mark + 50 WC XP + approval progress";
 	
 	if (global.welcomer_approval_started && questState == 0) {
-		questObjective = "Speak with the Woodcutting Trainer.";
+		questObjective = StoryOpening_GetCurrentObjective();
 		questReturnTo = "Woodcutting Trainer";
 	}
 	
@@ -237,7 +248,7 @@ GetWoodcuttingQuestInfo = function() {
 		questProgressAmount = 1;
 		questObjective = "Report back to the Welcomer.";
 		questReturnTo = "Welcomer";
-		questRewards = "50 WC XP + timber approval earned";
+		questRewards = "50 WC XP + Timber Mark earned";
 		
 		if (global.welcomer_woodcutting_acknowledged) {
 			questObjective = "Next: speak with the Mining Trainer.";
@@ -246,7 +257,7 @@ GetWoodcuttingQuestInfo = function() {
 	}
 	
 	return {
-		title: "Approval: Timber Duty",
+		title: "Second Chance Trial",
 		status: questStatus,
 		objective: questObjective,
 		return_to: questReturnTo,
@@ -693,6 +704,9 @@ ChooseContextMenuOption = function(_player, _option_index) {
 	if (IsInInteractionRange(_player, target, 1)) {
 		if (action_name == "npc_talk" && variable_instance_exists(_player, "npc_talk_cooldown") && _player.npc_talk_cooldown > 0) {
 			return false;
+		}
+		if (action_name == "npc_talk") {
+			FaceNpcTowardPlayer(target, _player);
 		}
 		with (target) {
 			interact(_player);
