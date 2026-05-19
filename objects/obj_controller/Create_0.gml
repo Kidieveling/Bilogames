@@ -36,7 +36,7 @@ menu_actions = [];
 menu_width = 132;
 menu_option_height = 22;
 interaction_range_tiles = 1;
-npc_target_objects = [obj_npc, obj_welcomer, obj_woodcutting_trainer];
+npc_target_objects = [obj_welcomer, obj_woodcutting_trainer, obj_mining_trainer, obj_crafting_trainer];
 
 GetFixedUIRect = function() {
 	var viewWidth = room_width;
@@ -545,32 +545,12 @@ GetInteractTargetAtPoint = function(_mx, _my) {
 	return best;
 };
 
-StartMoveToPoint = function(_player, _x, _y) {
-	var dest = FindNearestWalkableTileToPoint(_x, _y, 3);
-	if (!dest.found) {
+StartMoveToAdjacentWalkableTile = function(_player, _center_tile_x, _center_tile_y, _search_radius) {
+	if (!instance_exists(_player)) {
 		return false;
 	}
-	var dest_tile_x = floor(dest.x / global.tile_size);
-	var dest_tile_y = floor((dest.y - 1) / global.tile_size);
-	var path = FindPathToTile(_player, dest_tile_x, dest_tile_y, true);
-	if (!path.found) {
-		return false;
-	}
-	with (_player) {
-		pending_click_target = noone;
-		pending_click_action = "";
-		pending_click_action_label = "";
-	}
-	return StartTilePathMove(_player, path.points);
-};
-
-StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
-	if (!instance_exists(_target)) {
-		return false;
-	}
-	var target_tile_x = _player.InstanceTileX(_target);
-	var target_tile_y = _player.InstanceTileY(_target);
-	var search_radius = max(1, _range_tiles);
+	
+	var search_radius = max(0, _search_radius);
 	var best_path = [];
 	var best_found = false;
 	var best_length = 100000000;
@@ -578,12 +558,8 @@ StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
 	
 	for (var dx = -search_radius; dx <= search_radius; dx++) {
 		for (var dy = -search_radius; dy <= search_radius; dy++) {
-			if (dx == 0 && dy == 0) {
-				continue;
-			}
-			
-			var tx = target_tile_x + dx;
-			var ty = target_tile_y + dy;
+			var tx = _center_tile_x + dx;
+			var ty = _center_tile_y + dy;
 			if (!IsTileWalkable(tx, ty)) {
 				continue;
 			}
@@ -607,12 +583,39 @@ StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
 	if (!best_found) {
 		return false;
 	}
+	
+	with (_player) {
+		pending_click_target = noone;
+		pending_click_action = "";
+		pending_click_action_label = "";
+	}
+	return StartTilePathMove(_player, best_path);
+};
+
+StartMoveToPoint = function(_player, _x, _y) {
+	var center_tile_x = floor(_x / global.tile_size);
+	var center_tile_y = floor((_y - 1) / global.tile_size);
+	return StartMoveToAdjacentWalkableTile(_player, center_tile_x, center_tile_y, 6);
+};
+
+StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
+	if (!instance_exists(_target)) {
+		return false;
+	}
+	
+	var target_tile_x = _player.InstanceTileX(_target);
+	var target_tile_y = _player.InstanceTileY(_target);
+	var search_radius = max(1, _range_tiles);
+	if (!StartMoveToAdjacentWalkableTile(_player, target_tile_x, target_tile_y, search_radius)) {
+		return false;
+	}
+	
 	with (_player) {
 		pending_click_target = _target;
 		pending_click_action = "";
 		pending_click_action_label = "";
 	}
-	return StartTilePathMove(_player, best_path);
+	return true;
 };
 
 BeginInteractionMove = function(_player, _target, _action, _label) {
@@ -689,10 +692,10 @@ ChooseContextMenuOption = function(_player, _option_index) {
 	}
 	
 	if (action_name == "move_here") {
-		with (_player) {
-			pending_click_target = noone;
-			pending_click_action = "";
-			pending_click_action_label = "";
+		if (instance_exists(target)) {
+			var target_tile_x = _player.InstanceTileX(target);
+			var target_tile_y = _player.InstanceTileY(target);
+			return StartMoveToAdjacentWalkableTile(_player, target_tile_x, target_tile_y, 3);
 		}
 		return StartMoveToPoint(_player, move_x, move_y);
 	}
