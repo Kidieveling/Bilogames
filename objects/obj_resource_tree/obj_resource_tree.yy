@@ -1,19 +1,19 @@
 {
   "$GMObject":"",
-  "%Name":"obj_woodcutting_trainer",
+  "%Name":"obj_resource_tree",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"obj_woodcutting_trainer",
+  "name":"obj_resource_tree",
   "overriddenProperties":[],
   "parent":{
-    "name":"PlayerAndNpc",
-    "path":"folders/Objects/PlayerAndNpc.yy",
+    "name":"Resources",
+    "path":"folders/Objects/Items/Resources.yy",
   },
   "parentObjectId":{
-    "name":"obj_npc",
-    "path":"objects/obj_npc/obj_npc.yy",
+    "name":"obj_resource",
+    "path":"objects/obj_resource/obj_resource.yy",
   },
   "persistent":false,
   "physicsAngularDamping":0.1,
@@ -33,8 +33,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_woodcutting_trainer",
-    "path":"sprites/spr_woodcutting_trainer/spr_woodcutting_trainer.yy",
+    "name":"spr_tree_spawn",
+    "path":"sprites/spr_tree_spawn/spr_tree_spawn.yy",
   },
   "spriteMaskId":null,
   "visible":true,

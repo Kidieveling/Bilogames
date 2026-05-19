@@ -57,7 +57,7 @@ if (active || prompt_active || notice_timer > 0) {
 	draw_text_ext(textX, textY, displayText, lineGap, textWidth);
 	
 	if (active) {
-		var choicesY = textY + textLines * lineGap + 36;
+		var layout = ComputeDialogueLayout();
 		for (var i = 0; i < array_length(choices); ++i) {
 			var prefix = "  ";
 			if (i == choice_index) {
@@ -69,7 +69,13 @@ if (active || prompt_active || notice_timer > 0) {
 				choiceText = choiceText.text;
 			}
 			
-			draw_text(textX, choicesY + i * 24, prefix + choiceText);
+			var rowY = layout.choice_rects[i].y1;
+			draw_text(textX, rowY, prefix + choiceText);
 		}
 	}
 }
+
+draw_set_alpha(1);
+var cursor_gui_x = device_mouse_x_to_gui(0);
+var cursor_gui_y = device_mouse_y_to_gui(0);
+draw_sprite(spr_cursor, 0, cursor_gui_x + sprite_get_xoffset(spr_cursor), cursor_gui_y + sprite_get_yoffset(spr_cursor));

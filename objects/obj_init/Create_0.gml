@@ -18,4 +18,8 @@ if (!instance_exists(obj_dialogue)) {
     instance_create_layer(0, 0, "Instances", obj_dialogue);
 }
 
+if (!instance_exists(obj_debug_overlay)) {
+	instance_create_layer(0, 0, "Instances", obj_debug_overlay);
+}
+
 room_goto(rm_tutorial);

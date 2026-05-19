@@ -1,22 +1,9 @@
-is_npc = true
+event_inherited();
 sprite_index = spr_welcome
 visible = true
 
-if (!variable_global_exists("welcomer_approval_started")) {
-	global.welcomer_approval_started = false
-}
-if (!variable_global_exists("welcomer_woodcutting_approved")) {
-	global.welcomer_woodcutting_approved = false
-}
-if (!variable_global_exists("welcomer_woodcutting_acknowledged")) {
-	global.welcomer_woodcutting_acknowledged = false
-}
-if (!variable_global_exists("quest_woodcutting_state")) {
-	global.quest_woodcutting_state = 0
-}
-
 npc_name = "Welcomer"
-npc_text = "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. For now, you are Markless: not condemned, not cleared."
+npc_text = "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. Ask what you need to know before we speak of duty."
 dialogue_text = npc_name + ": " + npc_text
 image_speed = 0
 image_index = 0
@@ -45,25 +32,47 @@ FaceTowardInstance = function(_target) {
 	image_index = facing_dir
 }
 
+OpenDialogueMenu = function() {
+	face_player_while_dialogue = true
+	dialogue_text = GetWelcomerGreeting()
+	npc_choices = BuildWelcomerChoices()
+	Dialogue_PresentMenu(id, dialogue_text, npc_choices)
+}
+
+AcceptSecondChanceTrial = function() {
+	GameState_StartSecondChanceTrial()
+	Dialogue_ShowResponse(
+		id,
+		"Welcomer: Then it is on record. Your Second Chance Trial begins now. Sleep inside the walls. Work under supervision. Earn Marks from the trainers when you return with proof, not promises. Start with the Woodcutting Trainer and earn your Timber Mark."
+	)
+}
+
 GetWelcomerGreeting = function() {
-	if (!global.welcomer_approval_started) {
-		return "Welcomer: Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. For now, you are Markless: not condemned, not cleared."
+	if (!GameState_IsSecondChanceTrialStarted()) {
+		var remaining = GameState_GetBriefingRemainingCount()
+		if (remaining == 6) {
+			return "Welcomer: Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk. Before I assign you work, you should understand how you got here and what that costs this settlement."
+		}
+		if (remaining > 0) {
+			return "Welcomer: You still have " + string(remaining) + " matter" + (remaining == 1 ? "" : "s") + " to hear. Ask. When you understand where you stand, you may choose the trial."
+		}
+		return "Welcomer: You have heard the essentials. If you are ready to be judged by finished work instead of a missing past, tell me you accept the Second Chance Trial."
 	}
 	
-	if (global.quest_woodcutting_state == 0) {
-		return "Welcomer: Your Second Chance Trial is open. Start with the Timber Mark so the trainers can see you finish something useful."
+	if (Quest_Woodcutting_GetState() == 0) {
+		return "Welcomer: Your Second Chance Trial is underway. Earn Marks from the trainers — witnessed proof that you can finish useful work. Start with the Timber Mark."
 	}
 	
-	if (global.quest_woodcutting_state == 1) {
-		return "Welcomer: Still working toward your Timber Mark? Good. Simple work reveals complicated people."
+	if (Quest_Woodcutting_GetState() == 1) {
+		return "Welcomer: Still working toward your Timber Mark? Good. Hearthmere has no patience for half-finished duty. Neither do I."
 	}
 	
-	if (global.welcomer_woodcutting_approved && !global.welcomer_woodcutting_acknowledged) {
-		return "Welcomer: The Woodcutting Trainer approved your Timber Mark. That is your first real mark here."
+	if (GameState_IsWoodcuttingMarkApproved() && !GameState_IsWoodcuttingAcknowledged()) {
+		return "Welcomer: The Woodcutting Trainer endorsed your timber work. Your first Mark is on record. That is more identity than you arrived with."
 	}
 	
-	if (global.welcomer_woodcutting_approved) {
-		return "Welcomer: Timber Mark recorded. Next, prove you can pull useful metal out of stubborn ground."
+	if (GameState_IsWoodcuttingMarkApproved()) {
+		return "Welcomer: Timber Mark recorded. Next, prove you can pull ore from ground that would rather keep it. Speak with the Mining Trainer."
 	}
 	
 	return npc_name + ": " + npc_text
@@ -71,135 +80,187 @@ GetWelcomerGreeting = function() {
 
 BuildWelcomerChoices = function() {
 	var choices = []
+	var welcomer = id
 	
-	if (!global.welcomer_approval_started) {
-		array_push(choices, {
-			text: "What does Markless mean?",
-			action: function() {
-				global.welcomer_approval_started = true
-				
-				with (obj_dialogue) {
-					show(
-						"Welcomer: It means no record we can trust, no trade mark we can honor, and no standing inside these walls. Not guilty. Not safe. Unproven.",
-						[]
-					)
+	if (!GameState_IsSecondChanceTrialStarted()) {
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_WHAT_HAPPENED)) {
+			array_push(choices, {
+				text: "What happened to me?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_WHAT_HAPPENED)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: You were found outside the safe roads near the remains of a failed expedition route. Most of that party vanished from official history. You had no valid papers, no trade mark, and no witnesses Hearthmere will honor. You remember fragments — smoke, a broken gate, tools in mud, names called from the dark. We cannot tell if you were abandoned or saved. That is why you are here under watch, not welcome."
+						)
+					}
 				}
-			}
-		})
+			})
+		}
 		
-		array_push(choices, {
-			text: "What happens now?",
-			action: function() {
-				global.welcomer_approval_started = true
-				
-				with (obj_dialogue) {
-					show(
-						"Welcomer: You are on a Second Chance Trial. Earn Marks from the trainers, finish useful work, and give Hearthmere reasons to keep trusting the risk.",
-						[]
-					)
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_MARKLESS)) {
+			array_push(choices, {
+				text: "What does Markless mean?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_MARKLESS)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: No civic record we can trust. No trade mark. No guild standing. No name the settlement can rely on yet. Not condemned. Not cleared. Unproven. The Markless are people Hearthmere has not decided to rely on."
+						)
+					}
 				}
-			}
-		})
+			})
+		}
 		
-		array_push(choices, {
-			text: "Who vouched for me?",
-			action: function() {
-				global.welcomer_approval_started = true
-				
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Someone with enough weight to get you through the gate, and enough sense not to ask for more than that. Their name is not yours to spend yet.",
-						[]
-					)
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_HEARTHMERE)) {
+			array_push(choices, {
+				text: "What is Hearthmere?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_HEARTHMERE)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: A guarded frontier settlement on the edge of lands touched by the Hollowing. Not a peaceful tutorial village — a practical place where walls need timber, tools break, guards need gear, and nobody has spare trust. Hearthmere keeps people who might be useful. It measures everyone else carefully."
+						)
+					}
 				}
-			}
-		})
+			})
+		}
 		
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_SPONSOR)) {
+			array_push(choices, {
+				text: "Who vouched for me?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_SPONSOR)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: Someone with enough weight to force your admission through the gate. In the records they are only the Sponsor. No name for you to spend yet. Naming them would start arguments I am not paid enough to referee. Who they are, and why they cared, is not yours to know until you earn Marks."
+						)
+					}
+				}
+			})
+		}
+		
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_MARKS)) {
+			array_push(choices, {
+				text: "What is a Mark?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_MARKS)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: Witnessed proof — that you did real work, that someone saw it, that Hearthmere can point to it later. Timber, ore, forge, craft. Trainers endorse Marks when you return with results. Marks are how strangers become people the settlement can count on."
+						)
+					}
+				}
+			})
+		}
+		
+		if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_TRIAL_INFO)) {
+			array_push(choices, {
+				text: "What is the Second Chance Trial?",
+				welcomer: welcomer,
+				action: function() {
+					GameState_SetBriefingHeard(GAMESTATE_BRIEF_TRIAL_INFO)
+					if (instance_exists(welcomer)) {
+						Dialogue_ShowResponse(
+							welcomer,
+							"Welcomer: A supervised path back into trust. You may sleep inside the walls and speak with trainers, but you earn your place through useful work. No free access to dangerous routes, rare recipes, or sensitive records until you prove yourself. Accepting the trial is your choice. Asking questions is not."
+						)
+					}
+				}
+			})
+		}
+		
+		if (GameState_IsWelcomerBriefingComplete()) {
+			array_push(choices, {
+				text: "I accept the Second Chance Trial.",
+				welcomer: welcomer,
+				action: function() {
+					if (instance_exists(welcomer)) {
+						with (welcomer) {
+							AcceptSecondChanceTrial()
+						}
+					}
+				}
+			})
+		}
+	} else if (Quest_Woodcutting_GetState() == 0) {
 		array_push(choices, {
 			text: "Where should I start?",
+			welcomer: welcomer,
 			action: function() {
-				global.welcomer_approval_started = true
-				
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Start with the Woodcutting Trainer. Timber teaches the rhythm: take a tool, gather what is needed, return with proof, earn your first Mark.",
-						[]
+				if (instance_exists(welcomer)) {
+					Dialogue_ShowResponse(
+						welcomer,
+						"Welcomer: Woodcutting Trainer. Earn the Timber Mark — five Normal Logs returned with your own hands. When trainers can vouch for you without a clerk following, Hearthmere listens."
 					)
 				}
 			}
 		})
-	} else if (global.quest_woodcutting_state == 0) {
-		array_push(choices, {
-			text: "Where should I start?",
-			action: function() {
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Woodcutting first. Speak with the Woodcutting Trainer, take the work seriously, and bring back proof that you can earn the Timber Mark.",
-						[]
-					)
-				}
-			}
-		})
-	} else if (global.quest_woodcutting_state == 1) {
+	} else if (Quest_Woodcutting_GetState() == 1) {
 		array_push(choices, {
 			text: "I am on timber duty.",
+			welcomer: welcomer,
 			action: function() {
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Then finish it. Gather the Normal Logs and return them to the Woodcutting Trainer. Around here, half-finished work is just clutter with confidence.",
-						[]
+				if (instance_exists(welcomer)) {
+					Dialogue_ShowResponse(
+						welcomer,
+						"Welcomer: Then finish it. Gather the Normal Logs and return them to the Woodcutting Trainer. Around here, half-finished work is clutter with confidence."
 					)
 				}
 			}
 		})
-	} else if (global.welcomer_woodcutting_approved && !global.welcomer_woodcutting_acknowledged) {
+	} else if (GameState_IsWoodcuttingMarkApproved() && !GameState_IsWoodcuttingAcknowledged()) {
 		array_push(choices, {
 			text: "I finished timber duty.",
+			welcomer: welcomer,
 			action: function() {
-				global.welcomer_woodcutting_acknowledged = true
-				
-				with (obj_dialogue) {
-					show(
-						"Welcomer: I heard. Timber Mark recorded. Next, speak with the Mining Trainer. Wood keeps us standing, but ore keeps our tools from becoming expensive sticks.",
-						[]
+				GameState_SetWoodcuttingAcknowledged(true)
+				if (instance_exists(welcomer)) {
+					Dialogue_ShowResponse(
+						welcomer,
+						"Welcomer: Timber Mark recorded. Wood keeps us standing. Ore keeps our tools from becoming expensive sticks. Speak with the Mining Trainer next."
 					)
 				}
 			}
 		})
-	} else if (global.welcomer_woodcutting_approved) {
+	} else if (GameState_IsWoodcuttingMarkApproved()) {
 		array_push(choices, {
 			text: "What is next?",
+			welcomer: welcomer,
 			action: function() {
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Mining. Speak with the Mining Trainer and start learning Copper Ore. It is louder than woodcutting, but usually less splintery.",
-						[]
+				if (instance_exists(welcomer)) {
+					Dialogue_ShowResponse(
+						welcomer,
+						"Welcomer: Mining, then smelt, then craft. The Mining and Crafting trainers will direct you."
 					)
 				}
 			}
 		})
 		
 		array_push(choices, {
-			text: "How is my approval going?",
+			text: "How is my trial going?",
+			welcomer: welcomer,
 			action: function() {
-				with (obj_dialogue) {
-					show(
-						"Welcomer: Timber Mark is complete. That is one mark. Keep earning them and people here will stop calling you new. Eventually.",
-						[]
+				if (instance_exists(welcomer)) {
+					Dialogue_ShowResponse(
+						welcomer,
+						"Welcomer: One Mark earned. Were you worth saving? You answer that with finished work. Keep earning Marks."
 					)
 				}
 			}
 		})
 	}
 	
-	array_push(choices, {
-		text: "Goodbye.",
-		action: function() {
-			with (obj_dialogue) {
-				hide()
-			}
-		}
-	})
+	array_push(choices, Dialogue_MakeGoodbyeChoice())
 	
 	return choices
 }
@@ -207,20 +268,5 @@ BuildWelcomerChoices = function() {
 npc_choices = BuildWelcomerChoices()
 
 interact = function(_player) {
-	if (!instance_exists(obj_dialogue)) {
-		instance_create_layer(0, 0, "Instances", obj_dialogue)
-	}
-	
-	if (instance_exists(_player)) {
-		FaceTowardInstance(_player)
-	} else if (instance_exists(obj_player)) {
-		FaceTowardInstance(instance_find(obj_player, 0))
-	}
-	face_player_while_dialogue = true
-	dialogue_text = GetWelcomerGreeting()
-	npc_choices = BuildWelcomerChoices()
-	
-	with (obj_dialogue) {
-		show(other.dialogue_text, other.npc_choices)
-	}
+	Dialogue_InteractNpc(id, _player)
 }

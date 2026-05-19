@@ -35,15 +35,32 @@ if (active) {
 		choice_index = clamp(choice_index, 0, array_length(choices) - 1);
 	}
 	
-	if (keyboard_check_pressed(ord("E"))) {
-		if (array_length(choices) > 0) {
-			var choice = choices[choice_index];
-			
-			if (is_struct(choice) && variable_struct_exists(choice, "action")) {
-				choice.action();
-			} else {
-				hide();
+	var confirm_choice = keyboard_check_pressed(ord("E"));
+	
+	var layout = ComputeDialogueLayout();
+	if (layout.valid && array_length(layout.choice_rects) > 0) {
+		var mouse_gui_x = device_mouse_x_to_gui(0);
+		var mouse_gui_y = device_mouse_y_to_gui(0);
+		var hovered_choice = -1;
+		
+		for (var i = 0; i < array_length(layout.choice_rects); ++i) {
+			var row = layout.choice_rects[i];
+			if (point_in_rectangle(mouse_gui_x, mouse_gui_y, row.x1, row.y1, row.x2, row.y2)) {
+				hovered_choice = i;
 			}
+		}
+		
+		if (hovered_choice >= 0) {
+			choice_index = hovered_choice;
+			if (mouse_check_button_pressed(mb_left)) {
+				confirm_choice = true;
+			}
+		}
+	}
+	
+	if (confirm_choice) {
+		if (array_length(choices) > 0) {
+			ActivateChoice(choice_index);
 		} else {
 			hide();
 		}

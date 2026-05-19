@@ -7,6 +7,57 @@ function InventoryDebugLog(message) {
 	show_debug_message("[Inventory] " + string(message))
 }
 
+function Inventory_GetPlayerGrid() {
+	if (instance_exists(obj_controller)) {
+		return obj_controller.myItems;
+	}
+	return undefined;
+}
+
+function Inventory_LookupMasterItem(item_name, amount) {
+	if (is_undefined(amount)) {
+		amount = 1;
+	}
+	if (!variable_global_exists("AllItems") || !ds_exists(global.AllItems, ds_type_grid)) {
+		return undefined;
+	}
+	for (var i = 0; i < ds_grid_width(global.AllItems); i++) {
+		if (global.AllItems[# i, Item.Name] == item_name) {
+			return [
+				global.AllItems[# i, Item.Name],
+				global.AllItems[# i, Item.Sprite],
+				amount,
+				global.AllItems[# i, Item.Type],
+				global.AllItems[# i, Item.Price],
+				global.AllItems[# i, Item.Object]
+			];
+		}
+	}
+	return undefined;
+}
+
+/// @description Grant an item from the master list into a grid (defaults to player inventory).
+/// @param {Id.DsGrid} grid Optional inventory grid; uses player inventory when omitted.
+/// @param {String} item_name Master-list item name.
+/// @param {Real} amount Stack amount to add (default 1).
+function Inventory_GrantItem(grid, item_name, amount) {
+	if (is_undefined(grid)) {
+		grid = Inventory_GetPlayerGrid();
+	}
+	if (is_undefined(amount)) {
+		amount = 1;
+	}
+	if (is_undefined(grid)) {
+		return false;
+	}
+	var attributes = Inventory_LookupMasterItem(item_name, amount);
+	if (is_undefined(attributes)) {
+		InventoryDebugLog("Cannot grant unknown item: " + string(item_name));
+		return false;
+	}
+	return AddItem(grid, attributes);
+}
+
 function HasItem(grid, item_name) {
 	for (var i = 0; i < ds_grid_width(grid); i++) {
 		if (grid[# i, Item.Name] == item_name) {

@@ -1,5 +1,16 @@
 # Cursor Project Context
 
+## Response style (default)
+
+- **Minimal replies** — user trusts the work; do not narrate every step.
+- **No architecture summaries** unless explicitly requested.
+- After code changes: list **files touched** + **one-line test** (if needed) only.
+- Do **not** update `CHANGELOG.md` unless asked.
+- Prefer narrow tasks and `@file` over full-project exploration when the target is known.
+- Still follow in-place edit rules and GameMaker accuracy below; brevity is for chat output, not code quality.
+
+---
+
 ## IMPORTANT DEVELOPMENT RULES
 
 This project uses an **in-place update system**.
@@ -84,7 +95,9 @@ BAD:
 
 When generating code:
 - provide minimal diffs
-- explain exactly what changed
 - preserve surrounding code
 - avoid placeholder pseudocode
 - generate production-ready GML
+
+When replying after edits (see Response style above):
+- short file list + what changed in plain language; skip long rationale unless asked

@@ -157,7 +157,7 @@ TryGatherAttempt = function() {
 		return true
 	}
 	
-	var item_added = AddItem(obj_controller.myItems, [item_name, item_sprite, item_amount, item_type, item_price, item_object])
+	var item_added = Inventory_GrantItem(obj_controller.myItems, item_name, item_amount)
 	if (!item_added) {
 		with (obj_dialogue) {
 			notify("Your inventory is full.", 90)

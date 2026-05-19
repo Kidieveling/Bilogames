@@ -1,61 +1,68 @@
 /// @description Story opening helpers for the Markless / Second Chance Trial intro
 
 function StoryOpening_InitGlobals() {
-	if (!variable_global_exists("story_opening_seen")) {
-		global.story_opening_seen = false;
-	}
-	if (!variable_global_exists("story_opening_prompt_enabled")) {
-		global.story_opening_prompt_enabled = true;
-	}
+	GameState_Init();
+}
+
+function StoryOpening_IsWelcomerBriefingComplete() {
+	return GameState_IsWelcomerBriefingComplete();
 }
 
 function StoryOpening_IsSecondChanceTrialStarted() {
-	return variable_global_exists("welcomer_approval_started") && global.welcomer_approval_started;
+	return GameState_IsSecondChanceTrialStarted();
 }
 
 function StoryOpening_GetCurrentObjective() {
-	if (!StoryOpening_IsSecondChanceTrialStarted()) {
-		return "Speak with the Welcomer.";
+	if (!GameState_IsSecondChanceTrialStarted()) {
+		if (GameState_IsWelcomerBriefingComplete()) {
+			return "Accept the Second Chance Trial with the Welcomer.";
+		}
+		return "Learn your standing — speak with the Welcomer at Hearthmere.";
 	}
 	
-	if (variable_global_exists("quest_woodcutting_state")) {
-		if (global.quest_woodcutting_state == 0) {
-			return "Earn the Timber Mark: speak with the Woodcutting Trainer.";
-		}
-		if (global.quest_woodcutting_state == 1) {
-			return "Earn the Timber Mark: complete the Woodcutting Trainer's task.";
-		}
+	var woodcuttingState = Quest_Woodcutting_GetState();
+	if (woodcuttingState == 0) {
+		return "Earn the Timber Mark: speak with the Woodcutting Trainer.";
+	}
+	if (woodcuttingState == 1) {
+		return "Earn the Timber Mark: return 5 Normal Logs to the Woodcutting Trainer.";
 	}
 	
-	return "Continue the Second Chance Trial.";
+	if (GameState_IsWoodcuttingAcknowledged()) {
+		return "Earn the Ore Mark: gather copper, then smelt and craft.";
+	}
+	
+	return "Continue the Second Chance Trial — earn Marks through useful work.";
 }
 
 function StoryOpening_GetCurrentReturnTarget() {
-	if (!StoryOpening_IsSecondChanceTrialStarted()) {
+	if (!GameState_IsSecondChanceTrialStarted()) {
 		return "Welcomer";
 	}
 	
-	if (variable_global_exists("quest_woodcutting_state")) {
-		if (global.quest_woodcutting_state == 0 || global.quest_woodcutting_state == 1) {
-			return "Woodcutting Trainer";
+	var woodcuttingState = Quest_Woodcutting_GetState();
+	if (woodcuttingState == 0 || woodcuttingState == 1) {
+		return "Woodcutting Trainer";
+	}
+	if (woodcuttingState == 2) {
+		if (GameState_IsWoodcuttingAcknowledged()) {
+			return "Mining Trainer";
 		}
-		if (global.quest_woodcutting_state == 2) {
-			return "Welcomer";
-		}
+		return "Welcomer";
 	}
 	
 	return "Welcomer";
 }
 
 function StoryOpening_GetPromptText() {
-	if (!variable_global_exists("story_opening_prompt_enabled")) {
+	if (!GameState_IsStoryPromptEnabled()) {
 		return "";
 	}
-	if (!global.story_opening_prompt_enabled) {
+	if (GameState_IsSecondChanceTrialStarted()) {
 		return "";
 	}
-	if (StoryOpening_IsSecondChanceTrialStarted()) {
-		return "";
+	if (GameState_IsWelcomerBriefingComplete()) {
+		return "Accept the Second Chance Trial at the Welcomer";
 	}
 	return "Speak with the Welcomer";
 }

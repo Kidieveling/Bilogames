@@ -34,4 +34,6 @@ if (menu_open && array_length(menu_actions) > 0) {
 }
 
 draw_set_alpha(1);
-draw_sprite(spr_cursor, 0, mouse_x + sprite_get_xoffset(spr_cursor), mouse_y + sprite_get_yoffset(spr_cursor));
+if (!(instance_exists(obj_dialogue) && (obj_dialogue.active || obj_dialogue.prompt_active || obj_dialogue.notice_timer > 0))) {
+	draw_sprite(spr_cursor, 0, mouse_x + sprite_get_xoffset(spr_cursor), mouse_y + sprite_get_yoffset(spr_cursor));
+}

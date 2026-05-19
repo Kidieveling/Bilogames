@@ -14,7 +14,7 @@ Target modern GameMaker runtime and current GML syntax. Prefer production-qualit
 - Never invent APIs, engine callbacks, built-in variables, or IDE features. Verify existing usage before relying on an engine feature.
 - Preserve existing architecture unless explicitly asked to refactor.
 - Make the smallest safe change possible.
-- Explain every modified file, object, script, room instance creation code, and event after edits.
+- Note modified files/events after edits (brief; see `PROJECT_CONTEXT.md` Response style).
 - Prioritize maintainability, determinism, runtime performance, and clear gameplay behavior.
 - Treat `.yy` resource files as fragile project metadata. Avoid manual edits unless the change genuinely requires them and the format is understood.
 - Do not silently replace established systems. Extend the local pattern already used by the repository.
@@ -140,10 +140,8 @@ When generating code:
 
 After editing:
 
-- Summarize modified files and why they changed.
-- Mention new files, objects, scripts, events, or resources.
-- Note any manual GameMaker IDE work still required.
-- Mention tests or in-editor checks that could not be run.
+- List modified files and a short what changed (minimal unless user asks for detail).
+- Mention manual IDE steps or tests only when required.
 
 ## Repository Structure
 
@@ -192,9 +190,8 @@ Known systems in this project:
 
 ## Output Style
 
-- Be concise and technical.
+- Follow `PROJECT_CONTEXT.md` **Response style** for chat length (minimal by default).
 - Prefer production-ready code over tutorial code.
 - Do not over-explain basic GML concepts.
-- Clearly summarize modifications, affected objects/events, and remaining risks.
-- Use concrete file/object/event names.
-- If an in-editor test is needed, say exactly what to test.
+- After edits: files changed + brief what/why; one-line test if non-obvious.
+- Use concrete file/object/event names when mentioning changes.

@@ -1,6 +1,6 @@
 /// @description Variables
 
-StoryOpening_InitGlobals();
+GameState_Init();
 
 myItems = ds_grid_create(0, Item.Height);
 
@@ -36,7 +36,6 @@ menu_actions = [];
 menu_width = 132;
 menu_option_height = 22;
 interaction_range_tiles = 1;
-npc_target_objects = [obj_welcomer, obj_woodcutting_trainer, obj_mining_trainer, obj_crafting_trainer];
 
 GetFixedUIRect = function() {
 	var viewWidth = room_width;
@@ -99,7 +98,7 @@ FormatTargetPrompt = function(_prefix, _target) {
 		return _prefix + " to talk to " + _target.npc_name;
 	}
 	
-	if (_target.object_index == obj_resource && !_target.depleted) {
+	if (IsResourceTarget(_target) && !_target.depleted) {
 		var action_text = string_lower(_target.resource_action);
 		var connector = " ";
 		if (action_text == "swing pickaxe" || action_text == "smelt") {
@@ -121,13 +120,11 @@ ArrayContainsValue = function(_array, _value) {
 };
 
 IsNpcTarget = function(_target) {
-	if (!instance_exists(_target)) {
-		return false;
-	}
-	if (ArrayContainsValue(npc_target_objects, _target.object_index)) {
-		return true;
-	}
-	return variable_instance_exists(_target, "is_npc") && _target.is_npc;
+	return instance_exists(_target) && object_is_ancestor(_target.object_index, obj_npc);
+};
+
+IsResourceTarget = function(_target) {
+	return instance_exists(_target) && object_is_ancestor(_target.object_index, obj_resource);
 };
 
 FaceNpcTowardPlayer = function(_target, _player) {
@@ -145,127 +142,23 @@ TileBlockedByNpc = function(_tile_x, _tile_y) {
 		return false;
 	}
 	
-	for (var i = 0; i < array_length(npc_target_objects); i++) {
-		if (player.TileBlockedByObject(_tile_x, _tile_y, npc_target_objects[i])) {
-			return true;
-		}
-	}
-	
-	return false;
+	return player.TileBlockedByObject(_tile_x, _tile_y, obj_npc);
 };
 
 GetNearestNpcTarget = function(_x, _y) {
 	var nearest = noone;
 	var nearest_distance = 100000000;
 	
-	for (var c = 0; c < array_length(npc_target_objects); c++) {
-		var obj = npc_target_objects[c];
-		for (var i = 0; i < instance_number(obj); i++) {
-			var inst = instance_find(obj, i);
-			var dist = point_distance(_x, _y, inst.x, inst.y);
-			if (dist < nearest_distance) {
-				nearest = inst;
-				nearest_distance = dist;
-			}
+	for (var i = 0; i < instance_number(obj_npc); i++) {
+		var inst = instance_find(obj_npc, i);
+		var dist = point_distance(_x, _y, inst.x, inst.y);
+		if (dist < nearest_distance) {
+			nearest = inst;
+			nearest_distance = dist;
 		}
 	}
 	
 	return nearest;
-};
-
-if (!variable_global_exists("quest_woodcutting_state")) {
-	global.quest_woodcutting_state = 0;
-}
-if (!variable_global_exists("quest_woodcutting_required_logs")) {
-	global.quest_woodcutting_required_logs = 5;
-}
-if (!variable_global_exists("welcomer_approval_started")) {
-	global.welcomer_approval_started = false;
-}
-if (!variable_global_exists("welcomer_woodcutting_approved")) {
-	global.welcomer_woodcutting_approved = false;
-}
-if (!variable_global_exists("welcomer_woodcutting_acknowledged")) {
-	global.welcomer_woodcutting_acknowledged = false;
-}
-
-StartWoodcuttingQuest = function() {
-	if (global.quest_woodcutting_state == 0) {
-		global.quest_woodcutting_state = 1;
-	}
-};
-
-GetWoodcuttingQuestProgress = function() {
-	return clamp(GetItemAmount(myItems, "Normal Log"), 0, global.quest_woodcutting_required_logs);
-};
-
-CanCompleteWoodcuttingQuest = function() {
-	return global.quest_woodcutting_state == 1 && GetWoodcuttingQuestProgress() >= global.quest_woodcutting_required_logs;
-};
-
-CompleteWoodcuttingQuest = function() {
-	if (!CanCompleteWoodcuttingQuest()) {
-		return false;
-	}
-	if (!RemoveItem(myItems, "Normal Log", global.quest_woodcutting_required_logs)) {
-		return false;
-	}
-	global.quest_woodcutting_state = 2;
-	global.welcomer_woodcutting_approved = true;
-	AddSkillXP("Woodcutting", 50);
-	return true;
-};
-
-GetWoodcuttingQuestInfo = function() {
-	var questState = global.quest_woodcutting_state;
-	var questProgress = GetWoodcuttingQuestProgress();
-	var questRequired = global.quest_woodcutting_required_logs;
-	var questProgressAmount = clamp(questProgress / max(1, questRequired), 0, 1);
-	var questStatus = "Not Started";
-	var questObjective = StoryOpening_GetCurrentObjective();
-	var questReturnTo = StoryOpening_GetCurrentReturnTarget();
-	var questRewards = "Timber Mark + 50 WC XP + approval progress";
-	
-	if (global.welcomer_approval_started && questState == 0) {
-		questObjective = StoryOpening_GetCurrentObjective();
-		questReturnTo = "Woodcutting Trainer";
-	}
-	
-	if (questState == 1) {
-		questStatus = "Active";
-		questReturnTo = "Woodcutting Trainer";
-		
-		if (questProgress >= questRequired) {
-			questObjective = "Return the logs.";
-		} else {
-			questObjective = "Collect " + string(questRequired) + " Normal Logs.";
-		}
-	}
-	
-	if (questState == 2) {
-		questStatus = "Complete";
-		questProgress = questRequired;
-		questProgressAmount = 1;
-		questObjective = "Report back to the Welcomer.";
-		questReturnTo = "Welcomer";
-		questRewards = "50 WC XP + Timber Mark earned";
-		
-		if (global.welcomer_woodcutting_acknowledged) {
-			questObjective = "Next: speak with the Mining Trainer.";
-			questReturnTo = "Mining Trainer";
-		}
-	}
-	
-	return {
-		title: "Second Chance Trial",
-		status: questStatus,
-		objective: questObjective,
-		return_to: questReturnTo,
-		rewards: questRewards,
-		progress: questProgress,
-		required: questRequired,
-		progress_amount: questProgressAmount
-	};
 };
 
 SnapPointToTileCenter = function(_x, _y) {
@@ -330,125 +223,225 @@ FindNearestWalkableTileToPoint = function(_x, _y, _max_radius) {
 	return {found: false, x: _x, y: _y};
 };
 
-FindPathToTile = function(_player, _dest_tile_x, _dest_tile_y, _avoid_objects) {
-	if (argument_count < 4) {
+BuildPathPointsFromParents = function(_start_tile_x, _start_tile_y, _dest_tile_x, _dest_tile_y, _parent_x, _parent_y) {
+	var points = [];
+	if (_start_tile_x == _dest_tile_x && _start_tile_y == _dest_tile_y) {
+		return points;
+	}
+	
+	var reverse_points = [];
+	var path_x = _dest_tile_x;
+	var path_y = _dest_tile_y;
+	
+	while (!(path_x == _start_tile_x && path_y == _start_tile_y)) {
+		array_push(reverse_points, {x: TileCenterX(path_x), y: TileCenterY(path_y)});
+		var next_path_x = _parent_x[# path_x, path_y];
+		var next_path_y = _parent_y[# path_x, path_y];
+		path_x = next_path_x;
+		path_y = next_path_y;
+	}
+	
+	for (var point_index = array_length(reverse_points) - 1; point_index >= 0; point_index--) {
+		array_push(points, reverse_points[point_index]);
+	}
+	
+	return points;
+};
+
+RunWalkabilityBFS = function(_player, _avoid_objects) {
+	if (argument_count < 2) {
 		_avoid_objects = true;
 	}
 	
 	if (!instance_exists(_player)) {
-		return {found: false, points: []};
+		return { ok: false };
 	}
 	
 	var grid_w = room_width div global.tile_size;
 	var grid_h = room_height div global.tile_size;
-	if (_dest_tile_x < 0 || _dest_tile_x >= grid_w || _dest_tile_y < 0 || _dest_tile_y >= grid_h) {
-		return {found: false, points: []};
-	}
-	
 	var start_tile_x = _player.TileXFromPosition(_player.x);
 	var start_tile_y = _player.TileYFromBottom(_player.y);
-	if (start_tile_x == _dest_tile_x && start_tile_y == _dest_tile_y) {
-		return {found: true, points: []};
-	}
-	if (!IsTileWalkable(_dest_tile_x, _dest_tile_y, _avoid_objects)) {
-		return {found: false, points: []};
-	}
+	start_tile_x = clamp(start_tile_x, 0, grid_w - 1);
+	start_tile_y = clamp(start_tile_y, 0, grid_h - 1);
 	
 	var visited = ds_grid_create(grid_w, grid_h);
 	var parent_x = ds_grid_create(grid_w, grid_h);
 	var parent_y = ds_grid_create(grid_w, grid_h);
+	var dist = ds_grid_create(grid_w, grid_h);
 	ds_grid_set_region(visited, 0, 0, grid_w - 1, grid_h - 1, false);
 	ds_grid_set_region(parent_x, 0, 0, grid_w - 1, grid_h - 1, -1);
 	ds_grid_set_region(parent_y, 0, 0, grid_w - 1, grid_h - 1, -1);
+	ds_grid_set_region(dist, 0, 0, grid_w - 1, grid_h - 1, -1);
 	
 	var frontier = ds_queue_create();
 	visited[# start_tile_x, start_tile_y] = true;
+	dist[# start_tile_x, start_tile_y] = 0;
 	ds_queue_enqueue(frontier, start_tile_y * grid_w + start_tile_x);
 	
-	var found = false;
+	var neighbor_dx = [1, -1, 0, 0, 1, 1, -1, -1];
+	var neighbor_dy = [0, 0, 1, -1, 1, -1, 1, -1];
+	
 	while (!ds_queue_empty(frontier)) {
 		var current = ds_queue_dequeue(frontier);
 		var cx = current mod grid_w;
 		var cy = current div grid_w;
+		var current_dist = dist[# cx, cy];
 		
-		if (cx == _dest_tile_x && cy == _dest_tile_y) {
-			found = true;
-			break;
-		}
-		
-		var preferred_x = sign(_dest_tile_x - cx);
-		var preferred_y = sign(_dest_tile_y - cy);
-		var directions = [
-			{dx: preferred_x, dy: preferred_y},
-			{dx: preferred_x, dy: 0},
-			{dx: 0, dy: preferred_y},
-			{dx: preferred_x, dy: -preferred_y},
-			{dx: -preferred_x, dy: preferred_y},
-			{dx: -preferred_x, dy: 0},
-			{dx: 0, dy: -preferred_y},
-			{dx: -preferred_x, dy: -preferred_y},
-			{dx: 1, dy: 0},
-			{dx: -1, dy: 0},
-			{dx: 0, dy: 1},
-			{dx: 0, dy: -1},
-			{dx: 1, dy: 1},
-			{dx: 1, dy: -1},
-			{dx: -1, dy: 1},
-			{dx: -1, dy: -1}
-		];
-		
-		for (var dir_index = 0; dir_index < array_length(directions); dir_index++) {
-			var dx = directions[dir_index].dx;
-			var dy = directions[dir_index].dy;
-			if (dx == 0 && dy == 0) {
+		for (var dir_index = 0; dir_index < array_length(neighbor_dx); dir_index++) {
+			var nx = cx + neighbor_dx[dir_index];
+			var ny = cy + neighbor_dy[dir_index];
+			if (nx < 0 || nx >= grid_w || ny < 0 || ny >= grid_h) {
+				continue;
+			}
+			if (visited[# nx, ny]) {
+				continue;
+			}
+			if (!IsTileWalkable(nx, ny, _avoid_objects)) {
 				continue;
 			}
 			
-			var nx = cx + dx;
-			var ny = cy + dy;
-				if (nx < 0 || nx >= grid_w || ny < 0 || ny >= grid_h) {
-					continue;
-				}
-				if (visited[# nx, ny]) {
-					continue;
-				}
-				if (!IsTileWalkable(nx, ny, _avoid_objects)) {
-					continue;
-				}
-				
-				visited[# nx, ny] = true;
-				parent_x[# nx, ny] = cx;
-				parent_y[# nx, ny] = cy;
+			visited[# nx, ny] = true;
+			parent_x[# nx, ny] = cx;
+			parent_y[# nx, ny] = cy;
+			dist[# nx, ny] = current_dist + 1;
 			ds_queue_enqueue(frontier, ny * grid_w + nx);
 		}
 	}
 	
-	var points = [];
-	if (found) {
-		var reverse_points = [];
-		var path_x = _dest_tile_x;
-		var path_y = _dest_tile_y;
-		
-		while (!(path_x == start_tile_x && path_y == start_tile_y)) {
-			array_push(reverse_points, {x: TileCenterX(path_x), y: TileCenterY(path_y)});
+	ds_queue_destroy(frontier);
+	
+	return {
+		ok: true,
+		grid_w: grid_w,
+		grid_h: grid_h,
+		start_tile_x: start_tile_x,
+		start_tile_y: start_tile_y,
+		visited: visited,
+		parent_x: parent_x,
+		parent_y: parent_y,
+		dist: dist
+	};
+};
+
+FindBestPathTowardWorldPoint = function(_player, _world_x, _world_y, _avoid_objects) {
+	if (argument_count < 4) {
+		_avoid_objects = true;
+	}
+	
+	var bfs = RunWalkabilityBFS(_player, _avoid_objects);
+	if (!bfs.ok) {
+		return { found: false, points: [] };
+	}
+	
+	var grid_w = bfs.grid_w;
+	var grid_h = bfs.grid_h;
+	var start_tile_x = bfs.start_tile_x;
+	var start_tile_y = bfs.start_tile_y;
+	var visited = bfs.visited;
+	var parent_x = bfs.parent_x;
+	var parent_y = bfs.parent_y;
+	var dist = bfs.dist;
+	
+	var best_found = false;
+	var best_dest_x = -1;
+	var best_dest_y = -1;
+	var best_d_click = 100000000;
+	var best_path_len = 100000000;
+	
+	for (var ty = 0; ty < grid_h; ty++) {
+		for (var tx = 0; tx < grid_w; tx++) {
+			if (!visited[# tx, ty]) {
+				continue;
+			}
 			
-			var next_path_x = parent_x[# path_x, path_y];
-			var next_path_y = parent_y[# path_x, path_y];
-			path_x = next_path_x;
-			path_y = next_path_y;
-		}
-		
-		for (var point_index = array_length(reverse_points) - 1; point_index >= 0; point_index--) {
-			array_push(points, reverse_points[point_index]);
+			var tcx = TileCenterX(tx);
+			var tcy = TileCenterY(ty);
+			var d_click = point_distance(_world_x, _world_y, tcx, tcy);
+			var path_len = dist[# tx, ty];
+			
+			if (!best_found || d_click < best_d_click || (d_click == best_d_click && path_len < best_path_len)) {
+				best_found = true;
+				best_dest_x = tx;
+				best_dest_y = ty;
+				best_d_click = d_click;
+				best_path_len = path_len;
+			}
 		}
 	}
 	
-	ds_queue_destroy(frontier);
+	var points = [];
+	if (best_found) {
+		points = BuildPathPointsFromParents(start_tile_x, start_tile_y, best_dest_x, best_dest_y, parent_x, parent_y);
+	}
+	
 	ds_grid_destroy(visited);
 	ds_grid_destroy(parent_x);
 	ds_grid_destroy(parent_y);
+	ds_grid_destroy(dist);
 	
-	return {found: found, points: points};
+	return { found: best_found, points: points };
+};
+
+FindBestPathInTileRadius = function(_player, _center_tile_x, _center_tile_y, _search_radius, _avoid_objects) {
+	if (argument_count < 5) {
+		_avoid_objects = true;
+	}
+	
+	var bfs = RunWalkabilityBFS(_player, _avoid_objects);
+	if (!bfs.ok) {
+		return {found: false, points: []};
+	}
+	
+	var grid_w = bfs.grid_w;
+	var grid_h = bfs.grid_h;
+	var start_tile_x = bfs.start_tile_x;
+	var start_tile_y = bfs.start_tile_y;
+	var visited = bfs.visited;
+	var parent_x = bfs.parent_x;
+	var parent_y = bfs.parent_y;
+	var dist = bfs.dist;
+	
+	var search_radius = max(0, _search_radius);
+	var best_found = false;
+	var best_dest_x = -1;
+	var best_dest_y = -1;
+	var best_length = 100000000;
+	var best_distance = 100000000;
+	
+	for (var dx = -search_radius; dx <= search_radius; dx++) {
+		for (var dy = -search_radius; dy <= search_radius; dy++) {
+			var tx = _center_tile_x + dx;
+			var ty = _center_tile_y + dy;
+			if (tx < 0 || tx >= grid_w || ty < 0 || ty >= grid_h) {
+				continue;
+			}
+			if (!visited[# tx, ty]) {
+				continue;
+			}
+			
+			var candidate_length = dist[# tx, ty];
+			var candidate_distance = point_distance(_player.x, _player.y, TileCenterX(tx), TileCenterY(ty));
+			if (!best_found || candidate_length < best_length || (candidate_length == best_length && candidate_distance < best_distance)) {
+				best_found = true;
+				best_length = candidate_length;
+				best_distance = candidate_distance;
+				best_dest_x = tx;
+				best_dest_y = ty;
+			}
+		}
+	}
+	
+	var points = [];
+	if (best_found) {
+		points = BuildPathPointsFromParents(start_tile_x, start_tile_y, best_dest_x, best_dest_y, parent_x, parent_y);
+	}
+	
+	ds_grid_destroy(visited);
+	ds_grid_destroy(parent_x);
+	ds_grid_destroy(parent_y);
+	ds_grid_destroy(dist);
+	
+	return {found: best_found, points: points};
 };
 
 StartTilePathMove = function(_player, _path_points) {
@@ -457,24 +450,7 @@ StartTilePathMove = function(_player, _path_points) {
 	}
 	
 	with (_player) {
-		click_path = _path_points;
-		click_path_index = 0;
-		buffer_x = 0;
-		buffer_y = 0;
-		
-		if (array_length(click_path) <= 0) {
-			moving = false;
-			pending_click_move = false;
-		} else {
-			var first_step = click_path[0];
-			target_x = first_step.x;
-			target_y = first_step.y;
-			move_x = sign(target_x - x);
-			move_y = sign(target_y - y);
-			SetFacingFromVector(move_x, move_y);
-			moving = true;
-			pending_click_move = true;
-		}
+		TileMovement_QueueOrStartPath(_path_points);
 	}
 	
 	return true;
@@ -520,17 +496,13 @@ GetContextMenuRect = function() {
 GetInteractTargetAtPoint = function(_mx, _my) {
 	var best = noone;
 	var best_depth = 1000000;
-	var candidates = array_create(array_length(npc_target_objects) + 1);
-	for (var n = 0; n < array_length(npc_target_objects); n++) {
-		candidates[n] = npc_target_objects[n];
-	}
-	candidates[array_length(candidates) - 1] = obj_resource;
+	var candidates = [obj_npc, obj_resource];
 	
 	for (var c = 0; c < array_length(candidates); c++) {
 		var obj = candidates[c];
 		for (var i = 0; i < instance_number(obj); i++) {
 			var inst = instance_find(obj, i);
-			if (obj == obj_resource && inst.depleted) {
+			if (object_is_ancestor(inst.object_index, obj_resource) && inst.depleted) {
 				continue;
 			}
 			if (!position_meeting(_mx, _my, inst)) {
@@ -550,37 +522,8 @@ StartMoveToAdjacentWalkableTile = function(_player, _center_tile_x, _center_tile
 		return false;
 	}
 	
-	var search_radius = max(0, _search_radius);
-	var best_path = [];
-	var best_found = false;
-	var best_length = 100000000;
-	var best_distance = 100000000;
-	
-	for (var dx = -search_radius; dx <= search_radius; dx++) {
-		for (var dy = -search_radius; dy <= search_radius; dy++) {
-			var tx = _center_tile_x + dx;
-			var ty = _center_tile_y + dy;
-			if (!IsTileWalkable(tx, ty)) {
-				continue;
-			}
-			
-			var candidate_path = FindPathToTile(_player, tx, ty, true);
-			if (!candidate_path.found) {
-				continue;
-			}
-			
-			var candidate_length = array_length(candidate_path.points);
-			var candidate_distance = point_distance(_player.x, _player.y, TileCenterX(tx), TileCenterY(ty));
-			if (!best_found || candidate_length < best_length || (candidate_length == best_length && candidate_distance < best_distance)) {
-				best_found = true;
-				best_length = candidate_length;
-				best_distance = candidate_distance;
-				best_path = candidate_path.points;
-			}
-		}
-	}
-	
-	if (!best_found) {
+	var path_result = FindBestPathInTileRadius(_player, _center_tile_x, _center_tile_y, _search_radius, true);
+	if (!path_result.found) {
 		return false;
 	}
 	
@@ -589,16 +532,28 @@ StartMoveToAdjacentWalkableTile = function(_player, _center_tile_x, _center_tile
 		pending_click_action = "";
 		pending_click_action_label = "";
 	}
-	return StartTilePathMove(_player, best_path);
+	return StartTilePathMove(_player, path_result.points);
 };
 
 StartMoveToPoint = function(_player, _x, _y) {
-	var center_tile_x = floor(_x / global.tile_size);
-	var center_tile_y = floor((_y - 1) / global.tile_size);
-	return StartMoveToAdjacentWalkableTile(_player, center_tile_x, center_tile_y, 6);
+	if (!instance_exists(_player)) {
+		return false;
+	}
+	
+	var path_result = FindBestPathTowardWorldPoint(_player, _x, _y, true);
+	if (!path_result.found) {
+		return false;
+	}
+	
+	with (_player) {
+		pending_click_target = noone;
+		pending_click_action = "";
+		pending_click_action_label = "";
+	}
+	return StartTilePathMove(_player, path_result.points);
 };
 
-StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
+StartMoveToInteractTarget = function(_player, _target, _range_tiles, _action = "", _label = "") {
 	if (!instance_exists(_target)) {
 		return false;
 	}
@@ -612,8 +567,9 @@ StartMoveToInteractTarget = function(_player, _target, _range_tiles) {
 	
 	with (_player) {
 		pending_click_target = _target;
-		pending_click_action = "";
-		pending_click_action_label = "";
+		pending_click_action = _action;
+		pending_click_action_label = _label;
+		pending_click_move = true;
 	}
 	return true;
 };
@@ -629,13 +585,23 @@ BeginInteractionMove = function(_player, _target, _action, _label) {
 	return true;
 };
 
-ClearPendingInteraction = function(_player) {
+CancelClickMove = function(_player) {
+	if (!instance_exists(_player)) {
+		return;
+	}
+	
 	with (_player) {
+		click_path = [];
+		click_path_index = 0;
+		pending_click_move = false;
 		pending_click_target = noone;
 		pending_click_action = "";
 		pending_click_action_label = "";
-		pending_click_move = false;
 	}
+};
+
+ClearPendingInteraction = function(_player) {
+	CancelClickMove(_player);
 };
 
 OpenContextMenu = function(_target, _x, _y) {
@@ -650,7 +616,7 @@ OpenContextMenu = function(_target, _x, _y) {
 				{ label: "Talk-to", action: "npc_talk" },
 				{ label: "Move here", action: "move_here" }
 			];
-		} else if (_target.object_index == obj_resource && !_target.depleted) {
+		} else if (IsResourceTarget(_target) && !_target.depleted) {
 			var label = _target.resource_skill == "Woodcutting" ? "Chop down" : "Mine";
 			menu_actions = [
 				{ label: label, action: "resource_use" },
@@ -708,24 +674,13 @@ ChooseContextMenuOption = function(_player, _option_index) {
 		if (action_name == "npc_talk" && variable_instance_exists(_player, "npc_talk_cooldown") && _player.npc_talk_cooldown > 0) {
 			return false;
 		}
-		if (action_name == "npc_talk") {
-			FaceNpcTowardPlayer(target, _player);
+		if (!_player.moving) {
+			return _player.TryInteractWithTarget(target);
 		}
-		with (target) {
-			interact(_player);
-		}
-		return true;
+		return false;
 	}
 	
-	if (StartMoveToInteractTarget(_player, target, 1)) {
-		with (_player) {
-			pending_click_target = target;
-			pending_click_action = action_name;
-			pending_click_action_label = action_label;
-			pending_click_move = true;
-		}
-		return true;
-	}
+	return StartMoveToInteractTarget(_player, target, 1, action_name, action_label);
 	
 	return false;
 };

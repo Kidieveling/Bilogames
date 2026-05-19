@@ -1,52 +1,85 @@
-is_npc = true
-
-if (!variable_global_exists("welcomer_approval_started")) {
-	global.welcomer_approval_started = false
-}
+event_inherited();
 
 npc_name = "Mining Trainer"
-npc_text = "Mining work is approval work. If the Welcomer has your name, we can talk."
+npc_text = "Ore work is approval work. If the Welcomer has your name on the trial list, we can talk about the Ore Mark."
 dialogue_text = npc_name + ": " + npc_text
 
-npc_choices = [
-	{
-		text: "Can you teach me?",
-		action: function() {
-			if (!global.welcomer_approval_started) {
-				with (obj_dialogue) {
-					show("Mining Trainer: Start with the Welcomer. They decide who gets approved for settlement work. I teach mining, not paperwork, and I am grateful for that every morning.", [])
-				}
-			} else if (!HasItem(obj_controller.myItems, "Bronze Pickaxe")) {
-				with (obj_controller) {
-					AddItem(myItems, ["Bronze Pickaxe", spr_bronze_pickaxe, 1, Type.Tool, 5, obj_bronze_pickaxe])
-				}
+OpenDialogueMenu = function() {
+	dialogue_text = GetMiningGreeting()
+	npc_choices = BuildMiningChoices()
+	Dialogue_PresentMenu(id, dialogue_text, npc_choices)
+}
 
-				with (obj_dialogue) {
-					show("Mining Trainer: Good. The Welcomer has you moving through approval work. Take this pickaxe and start with Copper Ore. Swing clean, watch your footing, and do not argue with rocks. They always win eventually.", [])
-				}
-			} else {
-				with (obj_dialogue) {
-					show("Mining Trainer: You already have a pickaxe. Copper first. Bring useful ore, and the Welcomer will have one less reason to doubt you.", [])
-				}
-			}
-		}
-	},
-	{
-		text: "Goodbye.",
-		action: function() {
-			with (obj_dialogue) {
-				hide()
-			}
-		}
-	}
-]
+GetMiningGreeting = function() {
+	return npc_name + ": " + npc_text
+}
 
-interact = function(_player) {
-	if (!instance_exists(obj_dialogue)) {
-		instance_create_layer(0, 0, "Instances", obj_dialogue)
+TeachMining = function() {
+	if (!GameState_IsSecondChanceTrialStarted()) {
+		Dialogue_ShowResponse(
+			id,
+			"Mining Trainer: Start with the Welcomer. They decide who gets a Second Chance Trial. I teach mining, not paperwork — and I am grateful for that every morning."
+		)
+		return
 	}
 	
-	with (obj_dialogue) {
-		show(other.dialogue_text, other.npc_choices)
+	if (!HasItem(obj_controller.myItems, "Bronze Pickaxe")) {
+		Inventory_GrantItem(undefined, "Bronze Pickaxe")
+		
+		Dialogue_ShowResponse(
+			id,
+			"Mining Trainer: Good. Timber proved you can finish simple labor. Ore proves you can handle risk. Take this pickaxe. Copper first — tools, hinges, nails, what the forge eats. Swing clean, watch your footing, and do not argue with rocks. They always win eventually."
+		)
+	} else {
+		Dialogue_ShowResponse(
+			id,
+			"Mining Trainer: You already have a pickaxe. Get copper ore back here with your own hands. Useful ore is how Hearthmere stops doubting you."
+		)
 	}
+}
+
+ExplainMiningOrder = function() {
+	Dialogue_ShowResponse(
+		id,
+		"Mining Trainer: Because wood keeps the walls standing and ore keeps what is inside them from falling apart. Timber Mark first. Ore Mark next. That is the order the Welcomer likes, and the order that keeps recruits alive."
+	)
+}
+
+BuildMiningChoices = function() {
+	var choices = []
+	var trainer = id
+	
+	array_push(choices, {
+		text: "Can you teach me?",
+		trainer: trainer,
+		action: function() {
+			if (instance_exists(trainer)) {
+				with (trainer) {
+					TeachMining()
+				}
+			}
+		}
+	})
+	
+	array_push(choices, {
+		text: "Why mining after wood?",
+		trainer: trainer,
+		action: function() {
+			if (instance_exists(trainer)) {
+				with (trainer) {
+					ExplainMiningOrder()
+				}
+			}
+		}
+	})
+	
+	array_push(choices, Dialogue_MakeGoodbyeChoice())
+	
+	return choices
+}
+
+npc_choices = BuildMiningChoices()
+
+interact = function(_player) {
+	Dialogue_InteractNpc(id, _player)
 }

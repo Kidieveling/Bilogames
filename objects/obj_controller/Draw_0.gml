@@ -169,7 +169,7 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 		var questY = menuTop + 46;
 		var questW = 236;
 		var questH = 214;
-		var questInfo = GetWoodcuttingQuestInfo();
+		var questInfo = Quest_Woodcutting_GetQuestInfo();
 		
 		draw_set_alpha(0.78);
 		draw_set_color(c_black);

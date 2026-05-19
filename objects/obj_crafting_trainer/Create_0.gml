@@ -1,59 +1,102 @@
-is_npc = true
-
-if (!variable_global_exists("welcomer_approval_started")) {
-	global.welcomer_approval_started = false
-}
+event_inherited();
 
 npc_name = "Crafting Trainer"
-npc_text = "Crafting comes after approval starts. The Welcomer likes things in order. Annoying, but useful."
+npc_text = "Gathering is not enough here. Raw logs and ore have to become something the settlement can stock. The Welcomer sends people to me when they are ready for that step."
 dialogue_text = npc_name + ": " + npc_text
 
-npc_choices = [
-	{
-		text: "Can you teach me?",
-		action: function() {
-			if (!global.welcomer_approval_started) {
-				with (obj_dialogue) {
-					show("Crafting Trainer: Start with the Welcomer. They decide who gets approved for skill work, tools, and settlement responsibility. I organize materials, not second chances.", [])
-				}
-			} else if (!HasItem(obj_controller.myItems, "Normal Log")) {
-				with (obj_dialogue) {
-					show("Crafting Trainer: You need to gather some Normal Logs", [])
-				}
-			} else if (!HasItem(obj_controller.myItems, "Copper Ore")) {
-				with (obj_dialogue) {
-					show("Crafting Trainer: You need to gather some Copper Ore", [])
-				}
-			} else if (!HasItem(obj_controller.myItems, "Knife")) {
-				with (obj_controller) {
-					AddItem(myItems, ["Knife", spr_knife, 1, Type.Tool, 5, obj_knife])
-				}
-				with (obj_dialogue) {
-					show("Crafting Trainer: Good. You brought the materials. Take this knife. Work a log, then take your ore to the furnace. We do things in order here.", [])
-				}
-			} else {
-				with (obj_dialogue) {
-					show("Use your knife on a log and use your ore on a furnace", [])
-				}
-			}
-		}
-	},
-	{
-		text: "Goodbye.",
-		action: function() {
-			with (obj_dialogue) {
-				hide()
-			}
-		}
-	}
-]
+OpenDialogueMenu = function() {
+	dialogue_text = GetCraftingGreeting()
+	npc_choices = BuildCraftingChoices()
+	Dialogue_PresentMenu(id, dialogue_text, npc_choices)
+}
 
-interact = function(_player) {
-	if (!instance_exists(obj_dialogue)) {
-		instance_create_layer(0, 0, "Instances", obj_dialogue)
+GetCraftingGreeting = function() {
+	return npc_name + ": " + npc_text
+}
+
+TeachCrafting = function() {
+	if (!GameState_IsSecondChanceTrialStarted()) {
+		Dialogue_ShowResponse(
+			id,
+			"Crafting Trainer: Start with the Welcomer. They run the Second Chance Trial. I organize materials and recipes — not intake, and thank the walls for that."
+		)
+		return
 	}
 	
-	with (obj_dialogue) {
-		show(other.dialogue_text, other.npc_choices)
+	if (!HasItem(obj_controller.myItems, "Normal Log")) {
+		Dialogue_ShowResponse(
+			id,
+			"Crafting Trainer: Bring Normal Logs first. Timber Mark work — the Woodcutting Trainer should have set you on that. Hearthmere needs raw stock before it needs finished goods."
+		)
+		return
 	}
+	
+	if (!HasItem(obj_controller.myItems, "Copper Ore")) {
+		Dialogue_ShowResponse(
+			id,
+			"Crafting Trainer: You need Copper Ore from the Mining Trainer. Ore Mark work. Smelting turns effort into something stable. We do not skip steps in a settlement that counts every bar."
+		)
+		return
+	}
+	
+	if (!HasItem(obj_controller.myItems, "Knife")) {
+		Inventory_GrantItem(undefined, "Knife")
+		
+		Dialogue_ShowResponse(
+			id,
+			"Crafting Trainer: Good. You brought the raw materials. Take this knife. Work a log, then take your ore to the furnace and smelt a bar. That is the loop — gather, refine, craft. Turn borderland risk into gear someone can trust."
+		)
+		return
+	}
+	
+	Dialogue_ShowResponse(
+		id,
+		"Crafting Trainer: Use your knife on a log. Smelt your ore at the furnace. Return with proof, not enthusiasm. The Craft Mark is for people who make value, not piles."
+	)
+}
+
+ExplainCrafting = function() {
+	Dialogue_ShowResponse(
+		id,
+		"Crafting Trainer: Because Hearthmere does not survive on piles of ore in a yard. It survives on hinges, blades, repairs, and tools that hold. Smelting bridges effort and usefulness. Crafting proves you can create what others depend on."
+	)
+}
+
+BuildCraftingChoices = function() {
+	var choices = []
+	var trainer = id
+	
+	array_push(choices, {
+		text: "Can you teach me?",
+		trainer: trainer,
+		action: function() {
+			if (instance_exists(trainer)) {
+				with (trainer) {
+					TeachCrafting()
+				}
+			}
+		}
+	})
+	
+	array_push(choices, {
+		text: "Why smelt and craft?",
+		trainer: trainer,
+		action: function() {
+			if (instance_exists(trainer)) {
+				with (trainer) {
+					ExplainCrafting()
+				}
+			}
+		}
+	})
+	
+	array_push(choices, Dialogue_MakeGoodbyeChoice())
+	
+	return choices
+}
+
+npc_choices = BuildCraftingChoices()
+
+interact = function(_player) {
+	Dialogue_InteractNpc(id, _player)
 }

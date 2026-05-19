@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"StoryOpening",
+  "%Name":"Quest",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"StoryOpening",
+  "name":"Quest",
   "parent":{
     "name":"Scripts",
     "path":"folders/Scripts.yy",
