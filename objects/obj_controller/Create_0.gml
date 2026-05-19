@@ -278,6 +278,8 @@ RunWalkabilityBFS = function(_player, _avoid_objects) {
 	dist[# start_tile_x, start_tile_y] = 0;
 	ds_queue_enqueue(frontier, start_tile_y * grid_w + start_tile_x);
 	
+	// Cardinals first, then diagonals: shortest step count still uses diagonals when they reduce distance;
+	// straight horizontal/vertical routes stay cardinal instead of zigzag diagonals.
 	var neighbor_dx = [1, -1, 0, 0, 1, 1, -1, -1];
 	var neighbor_dy = [0, 0, 1, -1, 1, -1, 1, -1];
 	
@@ -288,8 +290,10 @@ RunWalkabilityBFS = function(_player, _avoid_objects) {
 		var current_dist = dist[# cx, cy];
 		
 		for (var dir_index = 0; dir_index < array_length(neighbor_dx); dir_index++) {
-			var nx = cx + neighbor_dx[dir_index];
-			var ny = cy + neighbor_dy[dir_index];
+			var ndx = neighbor_dx[dir_index];
+			var ndy = neighbor_dy[dir_index];
+			var nx = cx + ndx;
+			var ny = cy + ndy;
 			if (nx < 0 || nx >= grid_w || ny < 0 || ny >= grid_h) {
 				continue;
 			}
@@ -298,6 +302,12 @@ RunWalkabilityBFS = function(_player, _avoid_objects) {
 			}
 			if (!IsTileWalkable(nx, ny, _avoid_objects)) {
 				continue;
+			}
+			// Diagonal steps require both adjacent cardinal tiles walkable (no corner cutting).
+			if (ndx != 0 && ndy != 0) {
+				if (!IsTileWalkable(cx + ndx, cy, _avoid_objects) || !IsTileWalkable(cx, cy + ndy, _avoid_objects)) {
+					continue;
+				}
 			}
 			
 			visited[# nx, ny] = true;
@@ -450,7 +460,7 @@ StartTilePathMove = function(_player, _path_points) {
 	}
 	
 	with (_player) {
-		TileMovement_QueueOrStartPath(_path_points);
+		TileMovement_SetPath(_path_points);
 	}
 	
 	return true;
