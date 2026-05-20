@@ -15,6 +15,15 @@ notice_timer = 0;
 anchor_to_speaker = false;
 player_movement_locked = false;
 
+// Typewriter + choice reveal (legacy menus and conversation beats)
+display_text = "";
+full_text = "";
+typewriter_index = 0;
+typewriter_speed = 1;
+typewriter_timer = 0;
+text_finished = false;
+choices_visible = false;
+
 // Paced conversation mode
 conv_active = false;
 conv_beats = [];
@@ -23,11 +32,96 @@ conv_beat_type = "";
 conv_pause_timer = 0;
 conv_line_pause_after = 0;
 conv_line_pause_active = false;
-typewriter_revealed = 0;
-typewriter_target_length = 0;
-conv_show_continue_hint = false;
 panel_speaker_name = "";
 dialogue_dim_background = false;
+
+#region Typewriter
+
+Dialogue_ResetTypewriter = function(_full_text) {
+	full_text = _full_text;
+	text = _full_text;
+	display_text = "";
+	typewriter_index = 0;
+	typewriter_timer = 0;
+	text_finished = (string_length(_full_text) <= 0);
+	
+	if (text_finished) {
+		display_text = _full_text;
+		typewriter_index = string_length(_full_text);
+	}
+	
+	Dialogue_UpdateChoicesVisibility();
+};
+
+Dialogue_UpdateChoicesVisibility = function() {
+	if (!text_finished || array_length(choices) <= 0) {
+		choices_visible = false;
+		return;
+	}
+	
+	if (conv_active && conv_beat_type != DIALOGUE_BEAT_CHOICES) {
+		choices_visible = false;
+		return;
+	}
+	
+	choices_visible = true;
+};
+
+Dialogue_TickTypewriter = function() {
+	if (!active || text_finished || string_length(full_text) <= 0) {
+		return;
+	}
+	
+	typewriter_timer += 1;
+	if (typewriter_timer < typewriter_speed) {
+		return;
+	}
+	
+	typewriter_timer = 0;
+	typewriter_index = min(string_length(full_text), typewriter_index + DIALOGUE_TYPEWRITER_CHARS_PER_FRAME);
+	display_text = string_copy(full_text, 1, typewriter_index);
+	
+	if (typewriter_index >= string_length(full_text)) {
+		text_finished = true;
+		display_text = full_text;
+		Dialogue_UpdateChoicesVisibility();
+	}
+};
+
+Dialogue_FinishTypewriter = function() {
+	if (text_finished) {
+		return;
+	}
+	
+	typewriter_index = string_length(full_text);
+	display_text = full_text;
+	text_finished = true;
+	Dialogue_UpdateChoicesVisibility();
+};
+
+Dialogue_ResetPresentationState = function() {
+	display_text = "";
+	full_text = "";
+	text = "";
+	typewriter_index = 0;
+	typewriter_timer = 0;
+	text_finished = false;
+	choices_visible = false;
+};
+
+Dialogue_GetBodyTextForLayout = function() {
+	if (!active) {
+		return "";
+	}
+	
+	if (text_finished) {
+		return full_text;
+	}
+	
+	return display_text;
+};
+
+#endregion
 
 #region Legacy menu API
 
@@ -40,35 +134,28 @@ SetActiveSpeaker = function(_speaker) {
 show = function(_text, _choices) {
 	EndConversation();
 	player_movement_locked = false;
-	text = _text;
 	prompt_active = false;
 	prompt_text = "";
 	notice_timer = 0;
 	
-	if (array_length(_choices) == 0) {
-		choices = [
-			{
-				text: "OK",
-				action: function() {
-					with (obj_dialogue) {
-						hide();
-					}
-				}
-			}
-		];
-	} else {
-		choices = _choices;
-	}
-	
+	choices = _choices;
 	choice_index = 0;
 	active = true;
 	conv_active = false;
 	dialogue_dim_background = false;
+	
 	panel_speaker_name = DialogueUI_GetSpeakerName(GetActiveSpeaker());
+	var parsed = DialogueUI_ParseFormattedLine(_text);
 	if (panel_speaker_name == "") {
-		var parsed = DialogueUI_ParseFormattedLine(_text);
 		panel_speaker_name = parsed.speaker;
 	}
+	
+	var bodyText = _text;
+	if (parsed.speaker != "") {
+		bodyText = parsed.body;
+	}
+	
+	Dialogue_ResetTypewriter(bodyText);
 };
 
 #endregion
@@ -109,9 +196,7 @@ EndConversation = function() {
 	conv_pause_timer = 0;
 	conv_line_pause_after = 0;
 	conv_line_pause_active = false;
-	typewriter_revealed = 0;
-	typewriter_target_length = 0;
-	conv_show_continue_hint = false;
+	Dialogue_ResetPresentationState();
 };
 
 ApplyConversationBeat = function() {
@@ -128,41 +213,28 @@ ApplyConversationBeat = function() {
 	conv_beat_type = beat.type;
 	choices = [];
 	choice_index = 0;
-	conv_show_continue_hint = false;
 	conv_line_pause_active = false;
 	conv_line_pause_after = 0;
+	choices_visible = false;
 	
 	switch (beat.type) {
 		case DIALOGUE_BEAT_LINE:
 			panel_speaker_name = beat.speaker;
-			text = beat.text;
-			typewriter_target_length = string_length(text);
-			typewriter_revealed = 0;
+			Dialogue_ResetTypewriter(beat.text);
 			conv_line_pause_after = beat.pause_after;
 			break;
 		
 		case DIALOGUE_BEAT_PAUSE:
-			typewriter_revealed = string_length(text);
-			typewriter_target_length = string_length(text);
-			conv_pause_timer = beat.frames;
-			conv_show_continue_hint = false;
+			Dialogue_ResetTypewriter("");
 			break;
 		
 		case DIALOGUE_BEAT_CHOICES:
-			text = beat.prompt;
-			if (text != "") {
-				typewriter_target_length = string_length(text);
-				typewriter_revealed = 0;
-			} else {
-				typewriter_revealed = 0;
-				typewriter_target_length = 0;
-			}
 			choices = beat.choices;
-			choice_index = 0;
+			Dialogue_ResetTypewriter(beat.prompt);
 			break;
 		
 		case DIALOGUE_BEAT_ACTION:
-			text = "";
+			Dialogue_ResetTypewriter("");
 			if (variable_struct_exists(beat, "fn")) {
 				method(beat, beat.fn)();
 			}
@@ -179,48 +251,21 @@ AdvanceConversationBeat = function() {
 };
 
 Conversation_IsLineComplete = function() {
-	return typewriter_revealed >= typewriter_target_length;
-};
-
-Conversation_GetDisplayText = function() {
-	if (!conv_active) {
-		return text;
-	}
-	if (conv_beat_type == DIALOGUE_BEAT_PAUSE) {
-		return "";
-	}
-	return string_copy(text, 1, typewriter_revealed);
-};
-
-Conversation_TickTypewriter = function() {
-	if (!conv_active || conv_beat_type != DIALOGUE_BEAT_LINE) {
-		if (conv_active && conv_beat_type == DIALOGUE_BEAT_CHOICES && text != "" && !Conversation_IsLineComplete()) {
-			typewriter_revealed = min(typewriter_target_length, typewriter_revealed + DIALOGUE_TYPEWRITER_CHARS_PER_FRAME);
-			conv_show_continue_hint = Conversation_IsLineComplete() && array_length(choices) == 0;
-		}
-		return;
-	}
-	
-	if (!Conversation_IsLineComplete()) {
-		typewriter_revealed = min(typewriter_target_length, typewriter_revealed + DIALOGUE_TYPEWRITER_CHARS_PER_FRAME);
-	}
-	
-	conv_show_continue_hint = Conversation_IsLineComplete();
+	return text_finished;
 };
 
 Conversation_SkipTypewriter = function() {
-	typewriter_revealed = typewriter_target_length;
-	conv_show_continue_hint = true;
+	Dialogue_FinishTypewriter();
 };
 
 Conversation_TryAdvance = function() {
-	if (!conv_active) {
+	if (!conv_active || !text_finished) {
 		return false;
 	}
 	
 	if (conv_beat_type == DIALOGUE_BEAT_CHOICES) {
-		if (text != "" && !Conversation_IsLineComplete()) {
-			Conversation_SkipTypewriter();
+		if (!choices_visible) {
+			Dialogue_FinishTypewriter();
 			return true;
 		}
 		return false;
@@ -238,15 +283,9 @@ Conversation_TryAdvance = function() {
 		return true;
 	}
 	
-	if (!Conversation_IsLineComplete()) {
-		Conversation_SkipTypewriter();
-		return true;
-	}
-	
 	if (conv_line_pause_after > 0) {
 		conv_line_pause_active = true;
 		conv_pause_timer = conv_line_pause_after;
-		conv_show_continue_hint = false;
 		return true;
 	}
 	
@@ -308,7 +347,6 @@ hide = function() {
 	panel_speaker_name = "";
 	SetActiveSpeaker(noone);
 	player_movement_locked = false;
-	text = "";
 	choices = [];
 	choice_index = 0;
 	input_cooldown = 12;
@@ -321,7 +359,7 @@ Dialogue_PlayerMovementLocked = function() {
 	if (!active) {
 		return false;
 	}
-	return player_movement_locked || Conversation_WantsChoiceInput();
+	return player_movement_locked || choices_visible;
 };
 
 GetActiveSpeaker = function() {
@@ -353,30 +391,21 @@ ComputeDialogueLayout = function() {
 	
 	draw_set_font(fntSmaller);
 	
-	var bodyText = conv_active ? Conversation_GetDisplayText() : text;
-	var parsed = DialogueUI_ParseFormattedLine(bodyText);
+	var bodyText = Dialogue_GetBodyTextForLayout();
 	var speakerName = panel_speaker_name;
-	if (speakerName == "") {
-		speakerName = parsed.speaker;
-	}
 	if (speakerName == "") {
 		speakerName = DialogueUI_GetSpeakerName(GetActiveSpeaker());
 	}
-	if (!conv_active && parsed.speaker != "") {
-		bodyText = parsed.body;
-	}
+	
 	var padding = DIALOGUEUI_PADDING;
 	var lineGap = DIALOGUEUI_LINE_GAP;
 	var panelW = display_get_gui_width() * DIALOGUEUI_WIDTH_FACTOR;
 	var textWidth = panelW - padding * 2;
 	var nameRowH = (speakerName != "") ? DIALOGUEUI_NAME_GAP : 0;
 	var bodyLines = max(1, ceil(string_width(bodyText) / max(1, textWidth)));
-	var showContinue = conv_active && conv_show_continue_hint && array_length(choices) == 0;
-	var continueH = showContinue ? DIALOGUEUI_LINE_GAP + DIALOGUEUI_CONTINUE_GAP : 0;
-	var showChoices = array_length(choices) > 0 && (!conv_active || Conversation_WantsChoiceInput());
-	var choicesBlockH = showChoices ? DIALOGUEUI_CHOICE_TOP_GAP + array_length(choices) * DIALOGUEUI_CHOICE_ROW_HEIGHT : 0;
+	var choicesBlockH = choices_visible ? DIALOGUEUI_CHOICE_TOP_GAP + array_length(choices) * DIALOGUEUI_CHOICE_ROW_HEIGHT : 0;
 	
-	var contentH = nameRowH + bodyLines * lineGap + continueH + choicesBlockH;
+	var contentH = nameRowH + bodyLines * lineGap + choicesBlockH;
 	var panelH = contentH + padding * 2;
 	var panel = DialogueUI_GetPanelRect(panelH);
 	
@@ -386,14 +415,13 @@ ComputeDialogueLayout = function() {
 	layout.box_x2 = panel.x2;
 	layout.box_y2 = panel.y2;
 	layout.speaker_name = speakerName;
-	layout.body_text = bodyText;
-	layout.display_text = bodyText;
+	layout.body_text = text_finished ? full_text : display_text;
+	layout.display_text = layout.body_text;
 	layout.padding_x = padding;
 	layout.padding_y = padding;
 	layout.line_gap = lineGap;
 	layout.text_width = textWidth;
 	layout.text_lines = bodyLines;
-	layout.show_continue = showContinue;
 	
 	var textX = layout.box_x1 + padding;
 	var textY = layout.box_y1 + padding;
@@ -401,16 +429,16 @@ ComputeDialogueLayout = function() {
 		textY += nameRowH;
 	}
 	
-	var choicesY = textY + bodyLines * lineGap + continueH + DIALOGUEUI_CHOICE_TOP_GAP;
-	if (showChoices) {
-	for (var i = 0; i < array_length(choices); ++i) {
-		array_push(layout.choice_rects, {
-			x1: textX,
-			y1: choicesY + i * DIALOGUEUI_CHOICE_ROW_HEIGHT,
-			x2: layout.box_x2 - padding,
-			y2: choicesY + (i + 1) * DIALOGUEUI_CHOICE_ROW_HEIGHT - 2
-		});
-	}
+	var choicesY = textY + bodyLines * lineGap + DIALOGUEUI_CHOICE_TOP_GAP;
+	if (choices_visible) {
+		for (var i = 0; i < array_length(choices); ++i) {
+			array_push(layout.choice_rects, {
+				x1: textX,
+				y1: choicesY + i * DIALOGUEUI_CHOICE_ROW_HEIGHT,
+				x2: layout.box_x2 - padding,
+				y2: choicesY + (i + 1) * DIALOGUEUI_CHOICE_ROW_HEIGHT - 2
+			});
+		}
 	}
 	
 	return layout;
@@ -447,11 +475,9 @@ DrawDialogueLayout = function(_layout) {
 	draw_set_color(c_white);
 	draw_text_ext(textX, textY, _layout.body_text, _layout.line_gap, _layout.text_width);
 	
-	if (_layout.show_continue) {
-		draw_set_color(make_color_rgb(160, 160, 168));
-		var hintY = textY + _layout.text_lines * _layout.line_gap + DIALOGUEUI_CONTINUE_GAP;
-		draw_text(textX, hintY, "— E / Click —");
+	if (!choices_visible) {
 		draw_set_color(c_white);
+		return;
 	}
 	
 	for (var i = 0; i < array_length(choices); ++i) {
@@ -511,27 +537,60 @@ IsMouseOverDialogueGui = function(_mx, _my) {
 };
 
 Conversation_WantsChoiceInput = function() {
-	if (!conv_active || conv_beat_type != DIALOGUE_BEAT_CHOICES) {
-		return false;
-	}
-	if (text != "" && !Conversation_IsLineComplete()) {
-		return false;
-	}
-	return array_length(choices) > 0;
+	return conv_active && choices_visible;
 };
 
 Conversation_WantsAdvanceInput = function() {
-	if (!conv_active) {
+	if (!conv_active || !text_finished || choices_visible) {
 		return false;
 	}
-	if (Conversation_WantsChoiceInput()) {
-		return false;
-	}
+	
 	if (conv_beat_type == DIALOGUE_BEAT_LINE) {
 		return true;
 	}
 	if (conv_beat_type == DIALOGUE_BEAT_PAUSE) {
 		return true;
 	}
+	return false;
+};
+
+Dialogue_HandleChoiceInput = function(_layout, _mouse_gui_x, _mouse_gui_y, _confirm_choice) {
+	if (!choices_visible || array_length(choices) <= 0) {
+		return false;
+	}
+	
+	if (keyboard_check_pressed(ord("W"))) {
+		choice_index -= 1;
+	}
+	if (keyboard_check_pressed(ord("S"))) {
+		choice_index += 1;
+	}
+	choice_index = clamp(choice_index, 0, array_length(choices) - 1);
+	
+	var confirm_choice = _confirm_choice;
+	
+	if (_layout.valid && array_length(_layout.choice_rects) > 0) {
+		var hovered_choice = -1;
+		for (var i = 0; i < array_length(_layout.choice_rects); ++i) {
+			var row = _layout.choice_rects[i];
+			if (point_in_rectangle(_mouse_gui_x, _mouse_gui_y, row.x1, row.y1, row.x2, row.y2)) {
+				hovered_choice = i;
+			}
+		}
+		
+		if (hovered_choice >= 0) {
+			choice_index = hovered_choice;
+			if (mouse_check_button_pressed(mb_left)) {
+				confirm_choice = true;
+			}
+		}
+	}
+	
+	if (confirm_choice) {
+		ActivateChoice(choice_index);
+		input_cooldown = 6;
+		return true;
+	}
+	
 	return false;
 };

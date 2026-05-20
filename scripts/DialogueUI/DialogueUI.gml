@@ -8,8 +8,7 @@
 #macro DIALOGUEUI_LINE_GAP 18
 #macro DIALOGUEUI_NAME_GAP 24
 #macro DIALOGUEUI_CHOICE_ROW_HEIGHT 24
-#macro DIALOGUEUI_CHOICE_TOP_GAP 12
-#macro DIALOGUEUI_CONTINUE_GAP 8
+#macro DIALOGUEUI_CHOICE_TOP_GAP 8
 
 /// @param {Real} _height Optional panel height in GUI pixels (clamped to min/max)
 /// @returns {Struct} { x1, y1, x2, y2, w, h, padding }
