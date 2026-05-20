@@ -26,3 +26,24 @@ function CameraMiddleY() {
 	}
 	return room_height / 2;
 }
+
+/// @returns {Struct} { x, y } in Draw GUI space
+function Camera_RoomToGui(_room_x, _room_y) {
+	var gui_w = display_get_gui_width();
+	var gui_h = display_get_gui_height();
+	
+	if (view_camera[0] < 0) {
+		return { x: _room_x, y: _room_y };
+	}
+	
+	var cam = view_camera[0];
+	var view_x = camera_get_view_x(cam);
+	var view_y = camera_get_view_y(cam);
+	var view_w = max(1, camera_get_view_width(cam));
+	var view_h = max(1, camera_get_view_height(cam));
+	
+	return {
+		x: (_room_x - view_x) * (gui_w / view_w),
+		y: (_room_y - view_y) * (gui_h / view_h)
+	};
+}

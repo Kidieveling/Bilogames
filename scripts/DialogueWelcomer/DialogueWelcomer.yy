@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"DialogueWelcomer",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"DialogueWelcomer",
+  "parent":{
+    "name":"Welcomer",
+    "path":"folders/Scripts/Welcomer.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

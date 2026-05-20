@@ -53,8 +53,8 @@ BuildMiningChoices = function() {
 		text: "Can you teach me?",
 		trainer: trainer,
 		action: function() {
-			if (instance_exists(trainer)) {
-				with (trainer) {
+			if (instance_exists(self.trainer)) {
+				with (self.trainer) {
 					TeachMining()
 				}
 			}
@@ -65,8 +65,8 @@ BuildMiningChoices = function() {
 		text: "Why mining after wood?",
 		trainer: trainer,
 		action: function() {
-			if (instance_exists(trainer)) {
-				with (trainer) {
+			if (instance_exists(self.trainer)) {
+				with (self.trainer) {
 					ExplainMiningOrder()
 				}
 			}

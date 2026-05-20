@@ -69,8 +69,30 @@ function GameState_Init() {
 	if (!variable_global_exists("welcomer_woodcutting_acknowledged")) {
 		global.welcomer_woodcutting_acknowledged = false;
 	}
+	if (!variable_global_exists("welcomer_intro_complete")) {
+		global.welcomer_intro_complete = false;
+	}
+	if (!variable_global_exists("welcomer_guided_tour_complete")) {
+		global.welcomer_guided_tour_complete = false;
+	}
 	
 	Quest_Init();
+}
+
+function GameState_IsWelcomerIntroComplete() {
+	return variable_global_exists("welcomer_intro_complete") && global.welcomer_intro_complete;
+}
+
+function GameState_SetWelcomerIntroComplete(_complete = true) {
+	global.welcomer_intro_complete = _complete;
+}
+
+function GameState_IsWelcomerGuidedTourComplete() {
+	return variable_global_exists("welcomer_guided_tour_complete") && global.welcomer_guided_tour_complete;
+}
+
+function GameState_SetWelcomerGuidedTourComplete(_complete = true) {
+	global.welcomer_guided_tour_complete = _complete;
 }
 
 function GameState_IsStoryPromptEnabled() {

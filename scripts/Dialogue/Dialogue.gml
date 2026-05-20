@@ -21,16 +21,21 @@ function Dialogue_GetSpeaker() {
 function Dialogue_SetSpeaker(_speaker) {
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {
-		conversation_speaker = _speaker;
+		SetActiveSpeaker(_speaker);
 	}
 }
 
 function Dialogue_PresentMenu(_speaker, _text, _choices) {
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {
-		conversation_speaker = _speaker;
+		SetActiveSpeaker(_speaker);
 		show(_text, _choices);
 	}
+}
+
+function Dialogue_StartConversation(_speaker, _beats) {
+	Dialogue_SetSpeaker(_speaker);
+	DialogueConversation_Start(_speaker, _beats);
 }
 
 function Dialogue_OpenMenu(_speaker) {
@@ -53,7 +58,8 @@ function Dialogue_ShowResponse(_speaker, _text, _okText = "OK") {
 	var speaker = _speaker;
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {
-		conversation_speaker = speaker;
+		SetActiveSpeaker(speaker);
+		player_movement_locked = true;
 		show(_text, [
 			{
 				text: _okText,
@@ -71,7 +77,7 @@ function Dialogue_Close() {
 	}
 	
 	with (obj_dialogue) {
-		conversation_speaker = noone;
+		SetActiveSpeaker(noone);
 		hide();
 	}
 }

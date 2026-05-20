@@ -48,7 +48,16 @@ FinishCurrentTileMove = function() {
 }
 
 IsDialogueBlockingInput = function() {
-	return instance_exists(obj_dialogue) && (obj_dialogue.active || obj_dialogue.input_cooldown > 0)
+	if (!instance_exists(obj_dialogue)) {
+		return false;
+	}
+	if (obj_dialogue.input_cooldown > 0) {
+		return true;
+	}
+	if (obj_dialogue.Dialogue_PlayerMovementLocked()) {
+		return true;
+	}
+	return false;
 }
 
 CancelActiveMovement = function() {

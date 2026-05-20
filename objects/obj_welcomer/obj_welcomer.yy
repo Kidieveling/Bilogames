@@ -9,8 +9,8 @@
   "name":"obj_welcomer",
   "overriddenProperties":[],
   "parent":{
-    "name":"PlayerAndNpc",
-    "path":"folders/Objects/PlayerAndNpc.yy",
+    "name":"Welcomer",
+    "path":"folders/Objects/PlayerAndNpc/Welcomer.yy",
   },
   "parentObjectId":{
     "name":"obj_npc",
@@ -34,8 +34,8 @@
   "resourceVersion":"2.0",
   "solid":false,
   "spriteId":{
-    "name":"spr_welcome",
-    "path":"sprites/spr_welcome/spr_welcome.yy",
+    "name":"spr_welcomer",
+    "path":"sprites/spr_welcomer/spr_welcomer.yy",
   },
   "spriteMaskId":null,
   "visible":true,

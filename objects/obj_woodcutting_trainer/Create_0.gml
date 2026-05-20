@@ -93,9 +93,9 @@ BuildWoodcuttingChoices = function() {
 			text: "Where do I start?",
 			trainer: trainer,
 			action: function() {
-				if (instance_exists(trainer)) {
+				if (instance_exists(self.trainer)) {
 					Dialogue_ShowResponse(
-						trainer,
+						self.trainer,
 						"Woodcutting Trainer: With the Welcomer. They are the decider for new approval cases. Speak with them first, then come back when you are cleared for work."
 					)
 				}
@@ -106,8 +106,8 @@ BuildWoodcuttingChoices = function() {
 			text: "Start timber duty.",
 			trainer: trainer,
 			action: function() {
-				if (instance_exists(trainer)) {
-					with (trainer) {
+				if (instance_exists(self.trainer)) {
+					with (self.trainer) {
 						StartTimberDuty()
 					}
 				}
@@ -119,8 +119,8 @@ BuildWoodcuttingChoices = function() {
 				text: "Turn in the Normal Logs.",
 				trainer: trainer,
 				action: function() {
-					if (instance_exists(trainer)) {
-						with (trainer) {
+					if (instance_exists(self.trainer)) {
+						with (self.trainer) {
 							CheckTimberDuty()
 						}
 					}
@@ -131,8 +131,8 @@ BuildWoodcuttingChoices = function() {
 				text: "Ask about timber duty.",
 				trainer: trainer,
 				action: function() {
-					if (instance_exists(trainer)) {
-						with (trainer) {
+					if (instance_exists(self.trainer)) {
+						with (self.trainer) {
 							CheckTimberDuty()
 						}
 					}
@@ -144,9 +144,9 @@ BuildWoodcuttingChoices = function() {
 			text: "Timber duty is complete.",
 			trainer: trainer,
 			action: function() {
-				if (instance_exists(trainer)) {
+				if (instance_exists(self.trainer)) {
 					Dialogue_ShowResponse(
-						trainer,
+						self.trainer,
 						"Woodcutting Trainer: It is. Check in with the Welcomer when you want to see where your approval stands. I only handle the tree-shaped part of your future."
 					)
 				}
@@ -158,8 +158,8 @@ BuildWoodcuttingChoices = function() {
 		text: "Why wood first?",
 		trainer: trainer,
 		action: function() {
-			if (instance_exists(trainer)) {
-				with (trainer) {
+			if (instance_exists(self.trainer)) {
+				with (self.trainer) {
 					ExplainWoodcutting()
 				}
 			}

@@ -35,8 +35,8 @@ npc_choices = [
 		text: "UPDATE",
 		npc_inst: npc_inst,
 		action: function() {
-			if (instance_exists(npc_inst)) {
-				Dialogue_ShowResponse(npc_inst, "UPDATE: This NPC needs dialogue creation code lol.");
+			if (instance_exists(self.npc_inst)) {
+				Dialogue_ShowResponse(self.npc_inst, "UPDATE: This NPC needs dialogue creation code lol.");
 			}
 		}
 	},
