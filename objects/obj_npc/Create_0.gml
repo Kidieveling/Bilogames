@@ -1,3 +1,7 @@
+/// @description NPC base: 8-way facing, default menu stub; children override OpenDialogueMenu / creation code.
+
+#region Presentation
+
 is_npc = true;
 image_speed = 0;
 facing_dir = 0;
@@ -25,11 +29,16 @@ FaceTowardInstance = function(_target) {
 	image_index = facing_dir;
 };
 
+#endregion
+
+#region Dialogue Defaults
+
 npc_name = "UPDATE";
 npc_text = "UPDATE";
 dialogue_text = npc_name + ": " + npc_text;
 
 var npc_inst = id;
+// npc_inst on each choice — closure must capture id explicitly for menu callbacks.
 npc_choices = [
 	{
 		text: "UPDATE",
@@ -43,6 +52,10 @@ npc_choices = [
 	Dialogue_MakeGoodbyeChoice()
 ];
 
+#endregion
+
+#region Interact
+
 OpenDialogueMenu = function() {
 	Dialogue_PresentMenu(id, dialogue_text, npc_choices);
 };
@@ -50,3 +63,5 @@ OpenDialogueMenu = function() {
 interact = function(_player) {
 	Dialogue_InteractNpc(id, _player);
 };
+
+#endregion

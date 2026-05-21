@@ -1,8 +1,12 @@
+/// @description Timber Mark trainer; quest start/turn-in and tool grant live here (inherits obj_npc).
+
 event_inherited();
 
 npc_name = "Woodcutting Trainer"
 npc_text = "Timber work is the first real test around here. If the Welcomer has you on the trial list, I can put an axe in your hands."
 dialogue_text = npc_name + ": " + npc_text
+
+#region Menu
 
 OpenDialogueMenu = function() {
 	dialogue_text = GetWoodcuttingGreeting()
@@ -26,6 +30,10 @@ GetWoodcuttingGreeting = function() {
 	}
 	return "Woodcutting Trainer: Timber Mark earned. The Welcomer keeps the records. I keep the trees from becoming a crisis."
 }
+
+#endregion
+
+#region Quest Actions
 
 StartTimberDuty = function() {
 	if (!GameState_IsSecondChanceTrialStarted()) {
@@ -84,6 +92,11 @@ ExplainWoodcutting = function() {
 	}
 }
 
+#endregion
+
+#region Choices
+
+// trainer on each choice struct — menu callbacks need a stable instance id, not other from the builder.
 BuildWoodcuttingChoices = function() {
 	var choices = []
 	var trainer = id
@@ -170,6 +183,8 @@ BuildWoodcuttingChoices = function() {
 	
 	return choices
 }
+
+#endregion
 
 npc_choices = BuildWoodcuttingChoices()
 

@@ -1,3 +1,6 @@
+/// @description View/camera helpers for HUD anchoring and room-to-GUI coordinate conversion.
+
+#region View Position
 
 function CameraX() {
 	if (view_camera[0] >= 0) {
@@ -27,7 +30,10 @@ function CameraMiddleY() {
 	return room_height / 2;
 }
 
-/// @returns {Struct} { x, y } in Draw GUI space
+#endregion
+
+#region Room To GUI
+
 function Camera_RoomToGui(_room_x, _room_y) {
 	var gui_w = display_get_gui_width();
 	var gui_h = display_get_gui_height();
@@ -47,3 +53,5 @@ function Camera_RoomToGui(_room_x, _room_y) {
 		y: (_room_y - view_y) * (gui_h / view_h)
 	};
 }
+
+#endregion

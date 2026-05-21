@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"GameState",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"GameState",
+    "path":"folders/Scripts/Systems/GameState.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

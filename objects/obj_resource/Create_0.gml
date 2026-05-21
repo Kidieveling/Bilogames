@@ -1,28 +1,9 @@
+/// @description Data-driven gather nodes: room creation code sets fields; children inherit this loop.
+/// Woodcutting/Mining auto-repeat while in range; Smelting is one-shot per interact.
+
 depth = -y
 
-if (!variable_global_exists("rng_seeded")) {
-	randomize()
-	global.rng_seeded = true
-}
-
-if (!variable_global_exists("woodcutting_level")) {
-	global.woodcutting_level = 1
-}
-if (!variable_global_exists("woodcutting_xp")) {
-	global.woodcutting_xp = 0
-}
-if (!variable_global_exists("mining_level")) {
-	global.mining_level = 1
-}
-if (!variable_global_exists("mining_xp")) {
-	global.mining_xp = 0
-}
-if (!variable_global_exists("smelting_level")) {
-	global.smelting_level = 1
-}
-if (!variable_global_exists("smelting_xp")) {
-	global.smelting_xp = 0
-}
+#region Creation Code Defaults
 
 resource_name = "UPDATE Resource"
 resource_action = "Gather"
@@ -55,6 +36,10 @@ respawn_timer = 0
 respawn_time_min = 600
 respawn_time_max = 900
 
+#endregion
+
+#region Gather State
+
 CanAutoGather = function() {
 	return resource_skill == "Woodcutting" || resource_skill == "Mining"
 }
@@ -63,6 +48,10 @@ StopGathering = function() {
 	gathering_active = false
 	gathering_player = noone
 }
+
+#endregion
+
+#region Requirements
 
 CanUseResource = function() {
 	if (depleted) {
@@ -111,6 +100,10 @@ CanUseResource = function() {
 	return true
 }
 
+#endregion
+
+#region Depletion And Respawn
+
 DepleteResource = function() {
 	if (active_sprite == -1) {
 		active_sprite = sprite_index
@@ -142,6 +135,10 @@ RespawnResource = function() {
 	}
 }
 
+#endregion
+
+#region Gather Attempt
+
 TryGatherAttempt = function() {
 	if (!CanUseResource()) {
 		StopGathering()
@@ -150,6 +147,7 @@ TryGatherAttempt = function() {
 	
 	gather_cooldown = gather_cooldown_max
 	
+	// Miss still consumes the swing timer so auto-gather pacing stays steady.
 	if (CanAutoGather() && irandom(99) >= success_chance) {
 		with (obj_dialogue) {
 			notify("You swing at the " + other.resource_name + " but get nothing.", 60)
@@ -177,7 +175,7 @@ TryGatherAttempt = function() {
 	}
 	
 	with (obj_dialogue) {
-		var xp_text = " +" + string(other.xp_reward) + " " + other.resource_skill + " XP."
+		var xp_text = " +" + string(other.xp_reward) + " " + other.resource_skill + " XP.";
 		if (other.required_resource_name != "") {
 			if (leveled_up) {
 				notify("You smelt " + other.required_resource_name + " into " + other.item_name + "." + xp_text + " Level up!", 120)
@@ -199,6 +197,10 @@ TryGatherAttempt = function() {
 	
 	return true
 }
+
+#endregion
+
+#region Interact Entry
 
 interact = function(_player) {
 	if (!instance_exists(obj_dialogue)) {
@@ -222,3 +224,5 @@ interact = function(_player) {
 	
 	TryGatherAttempt()
 }
+
+#endregion

@@ -1,4 +1,6 @@
-/// @description Guided walking intro sequences (Welcomer tour + reusable step helpers)
+/// @description Welcomer walking tour: marker steps, paced lines, intro nodes; ticks on obj_welcomer Step.
+
+#region Step Type Macros
 
 #macro GUIDED_STEP_LINE "line"
 #macro GUIDED_STEP_GO "go"
@@ -15,6 +17,10 @@
 
 #macro GUIDED_ARRIVE_DIST 10
 #macro GUIDED_WAIT_PLAYER_DIST 128
+
+#endregion
+
+#region Step Builders
 
 function GuidedIntro_FindMarker(_marker_id) {
 	var found = noone;
@@ -77,6 +83,10 @@ function GuidedIntro_Step_IntroNode(_node_id, _opts = {}) {
 	};
 }
 
+#endregion
+
+#region Welcomer Tour Definition
+
 function GuidedIntro_BuildWelcomerTourSteps(_welcomer) {
 	return [
 		GuidedIntro_Step_IntroNode(DIALOGUE_WELCOMER_NODE_ARRIVAL, { lock_player: true }),
@@ -97,6 +107,10 @@ function GuidedIntro_BuildWelcomerTourSteps(_welcomer) {
 		GuidedIntro_Step_ReturnHome()
 	];
 }
+
+#endregion
+
+#region Session Lifecycle
 
 function GuidedIntro_StartWelcomerTour(_welcomer) {
 	if (!instance_exists(_welcomer)) {
@@ -206,6 +220,10 @@ function GuidedIntro_BeginCurrentStep(_welcomer) {
 	}
 }
 
+#endregion
+
+#region Present Lines
+
 function GuidedIntro_PresentTourLine(_welcomer, _step) {
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {
@@ -237,6 +255,10 @@ function GuidedIntro_PresentGoLine(_welcomer, _step) {
 	_welcomer.guided_phase = "show_line";
 }
 
+#endregion
+
+#region Tour Tick
+
 function GuidedIntro_TickWelcomer(_welcomer) {
 	if (!GuidedIntro_IsTourActive(_welcomer)) {
 		return;
@@ -259,6 +281,7 @@ function GuidedIntro_TickWelcomer(_welcomer) {
 			var arrived = !instance_exists(_welcomer.guided_target)
 				|| point_distance(_welcomer.x, _welcomer.y, _welcomer.guided_target.x, _welcomer.guided_target.y) <= GUIDED_ARRIVE_DIST;
 			var player_ready = true;
+			// Wait for the player to catch up at markers so tour lines are not spoken to an empty yard.
 			if (pending.wait_player && instance_exists(player)) {
 				player_ready = point_distance(_welcomer.x, _welcomer.y, player.x, player.y) <= GUIDED_WAIT_PLAYER_DIST;
 			}
@@ -315,6 +338,10 @@ function GuidedIntro_TickWelcomer(_welcomer) {
 	_welcomer.depth = -_welcomer.y;
 }
 
+#endregion
+
+#region Movement
+
 function GuidedIntro_MoveToward(_welcomer, _tx, _ty) {
 	var dist = point_distance(_welcomer.x, _welcomer.y, _tx, _ty);
 	if (dist <= GUIDED_ARRIVE_DIST) {
@@ -348,6 +375,10 @@ function GuidedIntro_FaceToward(_welcomer, _target) {
 	}
 }
 
+#endregion
+
+#region End Tour
+
 function GuidedIntro_EndTour(_welcomer) {
 	with (_welcomer) {
 		guided_tour_active = false;
@@ -365,6 +396,10 @@ function GuidedIntro_EndTour(_welcomer) {
 	}
 }
 
+#endregion
+
+#region Choice Hook
+
 function GuidedIntro_OnChoicePicked(_welcomer) {
 	if (!GuidedIntro_IsTourActive(_welcomer)) {
 		return;
@@ -373,3 +408,5 @@ function GuidedIntro_OnChoicePicked(_welcomer) {
 		_welcomer.guided_line_started = true;
 	}
 }
+
+#endregion

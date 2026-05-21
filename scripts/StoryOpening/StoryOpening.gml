@@ -1,4 +1,6 @@
-/// @description Story opening helpers for the Markless / Second Chance Trial intro
+/// @description HUD objective/return-target strings from GameState + quest progress (Welcomer intro pillar).
+
+#region Delegates
 
 function StoryOpening_InitGlobals() {
 	GameState_Init();
@@ -11,6 +13,10 @@ function StoryOpening_IsWelcomerBriefingComplete() {
 function StoryOpening_IsSecondChanceTrialStarted() {
 	return GameState_IsSecondChanceTrialStarted();
 }
+
+#endregion
+
+#region Objective Text
 
 function StoryOpening_GetCurrentObjective() {
 	if (!GameState_IsSecondChanceTrialStarted()) {
@@ -54,6 +60,10 @@ function StoryOpening_GetCurrentReturnTarget() {
 	return "Welcomer";
 }
 
+#endregion
+
+#region World Prompt
+
 function StoryOpening_GetPromptText() {
 	if (!GameState_IsStoryPromptEnabled()) {
 		return "";
@@ -66,3 +76,5 @@ function StoryOpening_GetPromptText() {
 	}
 	return "Speak with the Welcomer";
 }
+
+#endregion

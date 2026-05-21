@@ -1,3 +1,7 @@
+/// @description Hover highlight only; depleted nodes still draw but skip interact via CanUseResource.
+
+#region Hover Highlight
+
 if (point_in_rectangle(mouse_x, mouse_y, bbox_left, bbox_top, bbox_right, bbox_bottom)) {
 	draw_set_alpha(0.45);
 	draw_set_color(c_yellow);
@@ -6,4 +10,7 @@ if (point_in_rectangle(mouse_x, mouse_y, bbox_left, bbox_top, bbox_right, bbox_b
 	draw_set_color(c_white);
 	exit;
 }
+
+#endregion
+
 draw_self();

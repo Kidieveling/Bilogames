@@ -1,11 +1,12 @@
-/// @description Master Item Object
+/// @description Singleton master item catalog (global.AllItems); enums shared by inventory grid columns.
 
 if (instance_number(obj_items) > 1) {
 	instance_destroy()
 	exit
 }
 
-//All Item Properties
+#region Item Enums
+
 enum Item {
 	Name,
 	Sprite,
@@ -38,17 +39,9 @@ enum SortType {
 	Height
 }
 
+#endregion
 
-
-
-///Master item list
-///             0   1
-///0 (Name)  
-///1 (Sprite) 
-///2 (Amount)
-///3 (Type)
-///4 (Price)
-///5 (Object)
+#region Master List Bootstrap
 
 global.AllItems = ds_grid_create(0, Item.Height)
 
@@ -61,4 +54,5 @@ AddItemToMasterList(["Copper Ore", spr_copper_ore, 1, Type.Resource, 1, obj_copp
 AddItemToMasterList(["Knife", spr_knife, 1, Type.Tool, 5, obj_knife])
 AddItemToMasterList(["Copper Bar", spr_copper_bar, 1, Type.Resource, 1, obj_copper_bar])
 
+#endregion
 

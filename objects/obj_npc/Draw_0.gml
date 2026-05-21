@@ -1,3 +1,7 @@
+/// @description NPC sprite, hover tint, and name label (skipped for placeholder "UPDATE" names).
+
+#region Sprite
+
 var hovered = point_in_rectangle(mouse_x, mouse_y, bbox_left, bbox_top, bbox_right, bbox_bottom)
 
 if (hovered) {
@@ -9,6 +13,10 @@ if (hovered) {
 } else {
 	draw_self();
 }
+
+#endregion
+
+#region Name Label
 
 if (variable_instance_exists(id, "npc_name") && npc_name != "" && npc_name != "UPDATE") {
 	draw_set_font(fntSmaller);
@@ -24,6 +32,8 @@ if (variable_instance_exists(id, "npc_name") && npc_name != "" && npc_name != "U
 	draw_set_color(c_white);
 	draw_text(name_x, name_y, name_text);
 }
+
+#endregion
 
 draw_set_alpha(1);
 draw_set_color(c_white);

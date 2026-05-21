@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Welcomer",
-    "path":"folders/Objects/PlayerAndNpc/Welcomer.yy",
+    "path":"folders/Objects/Actors/NPCs/Welcomer.yy",
   },
   "parentObjectId":{
     "name":"obj_npc",

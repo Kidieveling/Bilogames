@@ -51,8 +51,8 @@
   },
   "origin":7,
   "parent":{
-    "name":"PlayerAndNPC",
-    "path":"folders/Sprites/PlayerAndNPC.yy",
+    "name":"Trainers",
+    "path":"folders/Sprites/Actors/NPCs/Trainers.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

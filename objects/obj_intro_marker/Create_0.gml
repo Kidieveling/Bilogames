@@ -1,5 +1,8 @@
-/// @description Invisible tour waypoint — marker_id from rm_tutorial placement
+/// @description Invisible GuidedIntro waypoints; marker_id assigned from rm_tutorial placement coords.
+
 visible = false;
+
+#region Marker Id By Position
 
 if (x == 160 && y == 240) {
 	marker_id = "intro_gate";
@@ -12,3 +15,5 @@ if (x == 160 && y == 240) {
 } else {
 	marker_id = "unset";
 }
+
+#endregion

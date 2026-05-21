@@ -10,8 +10,8 @@
   "name":"obj_debug_overlay",
   "overriddenProperties":[],
   "parent":{
-    "name":"Controllers",
-    "path":"folders/Objects/Controllers.yy",
+    "name":"Debug",
+    "path":"folders/Objects/Debug.yy",
   },
   "parentObjectId":null,
   "persistent":true,

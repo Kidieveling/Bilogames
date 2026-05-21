@@ -1,8 +1,10 @@
-/// @description Debug overlay (FPS, frame time, animated heartbeat)
+/// @description Draw GUI perf panel (F3); red flash on frame hitch, animated sprite heartbeat.
 
 if (!enabled) {
 	exit;
 }
+
+#region Panel Background
 
 var panel_x = 8;
 var panel_y = 8;
@@ -23,6 +25,10 @@ if (spike_flash > 0) {
 	draw_rectangle(panel_x, panel_y, panel_x + panel_w, panel_y + panel_h, false);
 	draw_set_alpha(1);
 }
+
+#endregion
+
+#region Metrics Text
 
 draw_set_font(fntSmaller);
 draw_set_halign(fa_left);
@@ -64,6 +70,10 @@ text_y += line_h;
 draw_set_color(c_ltgray);
 draw_text(text_x, text_y, "F3 hide  |  red flash = hitch");
 
+#endregion
+
+#region Heartbeat Sprite
+
 var anim_x = panel_x + panel_w - 36;
 var anim_y = panel_y + panel_h - 40;
 draw_sprite(spr_player, floor(anim_frame), anim_x, anim_y);
@@ -75,3 +85,5 @@ draw_circle(anim_x - 14, anim_y + 18, 4 + 2 * pulse, false);
 draw_set_color(c_white);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
+
+#endregion

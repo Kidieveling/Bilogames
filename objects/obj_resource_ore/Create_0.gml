@@ -1,4 +1,8 @@
+/// @description Mining node; creation code overrides obj_resource defaults.
+
 event_inherited();
+
+#region Creation Code
 
 sprite_index = spr_ore_spawn;
 
@@ -22,3 +26,5 @@ success_chance = 70;
 depleted_sprite = spr_resource;
 respawn_time_min = 720;
 respawn_time_max = 1080;
+
+#endregion

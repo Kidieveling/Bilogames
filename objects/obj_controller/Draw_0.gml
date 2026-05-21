@@ -1,5 +1,9 @@
-/// @description Draw The Menu
+/// @description World-space HUD: skill bar, bottom-right menu panel, tab content, inventory hover tooltip.
+/// Room coordinates track the camera; obj_player uses IsMouseOverFixedUI to block clicks through the chrome.
+
 draw_self();
+
+#region View And Skill Bar
 
 var viewWidth = room_width;
 var viewHeight = room_height;
@@ -21,9 +25,12 @@ draw_text(CameraMiddleX() - 220, skillTextY, "Woodcutting " + string(global.wood
 draw_text(CameraMiddleX() - 40, skillTextY, "Mining " + string(global.mining_level) + "  " + string(global.mining_xp) + "/" + string(miningNextXP));
 draw_text(CameraMiddleX() + 110, skillTextY, "Smelting " + string(global.smelting_level) + "  " + string(global.smelting_xp) + "/" + string(smeltingNextXP));
 
+#endregion
+
+#region Menu Panel And Tabs
+
 var hoveredItem = undefined;
-	
-//Back of the menu
+
 draw_set_alpha(1);
 var menuMargin = 16;
 var menuScale = 2;
@@ -72,8 +79,11 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 	}
 	draw_sprite_stretched(spr_ui_tab, 0, questsTabX1, tabY1, questsTabW, 28);
 	draw_text(questsTabX1 + (questsTabW - string_width("Quests")) / 2, tabY1 + 8, "Quests");
-	
-	//Items
+
+#endregion
+
+#region Tab Content
+
 	if (selectedMenuTab == menuTabInventory) {
 		var slotSize = 34;
 		var slotDrawSize = 28;
@@ -120,7 +130,6 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 			draw_set_font(fntSmaller);
 			draw_text(itemX - 12, itemY + 5, myItems[# i, Item.Amount]);
 			
-			//Check if mouse is hovering over an item
 			if (itemIsHovered) {
 				draw_set_alpha(1);
 				if (currentItem != undefined && instance_exists(currentItem)) {
@@ -202,8 +211,11 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 			draw_sprite_part_ext(spr_ui_xp_bar_fill, 0, 0, 0, floor(sprite_get_width(spr_ui_xp_bar_fill) * questInfo.progress_amount), sprite_get_height(spr_ui_xp_bar_fill), questX + 14, questY + 196, 208 / sprite_get_width(spr_ui_xp_bar_fill), 1, c_white, 1);
 		}
 	}
-	
-	//Draw locked item
+
+#endregion
+
+#region Inventory Chrome
+
 	if (selectedMenuTab == menuTabInventory && itemLocked == true) {
 		draw_set_alpha(0.5);
 		draw_set_color(c_red);
@@ -211,14 +223,17 @@ draw_sprite_ext(spr_ui_panel, 0, menuLeft, menuTop, menuScale, menuScale, 0, c_w
 		draw_set_alpha(1);
 	}
 	
-	//Front of the inventory
 	if (selectedMenuTab == menuTabInventory) {
 		draw_sprite_stretched(spr_ui_xp_bar_back, 0, menuLeft + 30, menuTop + 250, 236, 11);
 	}
 	
+#endregion
+
+#region Hover Tooltip
+
 if (selectedMenuTab == menuTabInventory && hoveredItem != undefined && hoveredItem != noone) {
 	DrawHoverItemDetails(hoveredItem);
 }
 
-	
+#endregion
 

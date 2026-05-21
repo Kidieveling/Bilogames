@@ -1,7 +1,11 @@
+/// @description Singleton perf overlay; F3 toggles global.debug_overlay_enabled across rooms.
+
 if (instance_number(obj_debug_overlay) > 1) {
 	instance_destroy(other);
 	exit;
 }
+
+#region State
 
 if (!variable_global_exists("debug_overlay_enabled")) {
 	global.debug_overlay_enabled = true;
@@ -18,3 +22,5 @@ anim_speed = 0.25;
 walk_frames = 4;
 pulse_timer = 0;
 spike_flash = 0;
+
+#endregion

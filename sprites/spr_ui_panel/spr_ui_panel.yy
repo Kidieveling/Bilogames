@@ -24,7 +24,10 @@
   "name":"spr_ui_panel",
   "nineSlice":null,
   "origin":0,
-  "parent": {"name":"GUI","path":"folders/Sprites/GUI.yy",},
+  "parent":{
+    "name":"Inventory",
+    "path":"folders/Sprites/UI/Inventory.yy",
+  },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
   "resourceVersion":"2.0",

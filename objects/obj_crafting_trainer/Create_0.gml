@@ -1,8 +1,12 @@
+/// @description Crafting/smelting trial trainer (inherits obj_npc).
+
 event_inherited();
 
 npc_name = "Crafting Trainer"
 npc_text = "Gathering is not enough here. Raw logs and ore have to become something the settlement can stock. The Welcomer sends people to me when they are ready for that step."
 dialogue_text = npc_name + ": " + npc_text
+
+#region Menu
 
 OpenDialogueMenu = function() {
 	dialogue_text = GetCraftingGreeting()
@@ -14,6 +18,11 @@ GetCraftingGreeting = function() {
 	return npc_name + ": " + npc_text
 }
 
+#endregion
+
+#region Training
+
+// Gates on trial flag plus inventory proof — mirrors gather → smelt → craft loop in the yard.
 TeachCrafting = function() {
 	if (!GameState_IsSecondChanceTrialStarted()) {
 		Dialogue_ShowResponse(
@@ -94,6 +103,8 @@ BuildCraftingChoices = function() {
 	
 	return choices
 }
+
+#endregion
 
 npc_choices = BuildCraftingChoices()
 

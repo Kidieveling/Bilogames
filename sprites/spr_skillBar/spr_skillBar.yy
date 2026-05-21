@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"GUI",
-    "path":"folders/Sprites/GUI.yy",
+    "name":"SkillBar",
+    "path":"folders/Sprites/UI/SkillBar.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

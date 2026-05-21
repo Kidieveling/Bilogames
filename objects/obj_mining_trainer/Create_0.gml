@@ -1,8 +1,12 @@
+/// @description Ore Mark trainer; mining trial dialogue (inherits obj_npc).
+
 event_inherited();
 
 npc_name = "Mining Trainer"
 npc_text = "Ore work is approval work. If the Welcomer has your name on the trial list, we can talk about the Ore Mark."
 dialogue_text = npc_name + ": " + npc_text
+
+#region Menu
 
 OpenDialogueMenu = function() {
 	dialogue_text = GetMiningGreeting()
@@ -13,6 +17,10 @@ OpenDialogueMenu = function() {
 GetMiningGreeting = function() {
 	return npc_name + ": " + npc_text
 }
+
+#endregion
+
+#region Training
 
 TeachMining = function() {
 	if (!GameState_IsSecondChanceTrialStarted()) {
@@ -77,6 +85,8 @@ BuildMiningChoices = function() {
 	
 	return choices
 }
+
+#endregion
 
 npc_choices = BuildMiningChoices()
 

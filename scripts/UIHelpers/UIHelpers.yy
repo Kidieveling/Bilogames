@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"UIHelpers",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"UIHelpers",
+  "parent":{
+    "name":"Controller",
+    "path":"folders/Scripts/Systems/Controller.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

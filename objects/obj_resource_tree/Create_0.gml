@@ -1,4 +1,8 @@
+/// @description Woodcutting node; creation code overrides obj_resource defaults.
+
 event_inherited();
+
+#region Creation Code
 
 sprite_index = spr_tree_spawn;
 
@@ -22,3 +26,5 @@ success_chance = 75;
 depleted_sprite = spr_resource;
 respawn_time_min = 600;
 respawn_time_max = 900;
+
+#endregion

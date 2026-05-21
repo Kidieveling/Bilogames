@@ -1,4 +1,7 @@
-/// @description Central story and progression flags
+/// @description Story progression globals, Welcomer briefing/trial flags, shared movement tick,
+/// and skill/RNG bootstrap. Called from obj_controller Create; rm_init still hard-resets skills on boot.
+
+#region Briefing Topic Macros
 
 #macro GAMESTATE_BRIEF_WHAT_HAPPENED "what_happened"
 #macro GAMESTATE_BRIEF_MARKLESS "markless"
@@ -7,7 +10,11 @@
 #macro GAMESTATE_BRIEF_MARKS "marks"
 #macro GAMESTATE_BRIEF_TRIAL_INFO "trial_info"
 
-/// Frames per movement tick (visual lerp still runs every frame; logic steps on tile land).
+#endregion
+
+#region Movement Tick
+
+/// Logic steps on movement ticks; visual lerp still runs every frame between tile centers.
 #macro MOVEMENT_TICK_LENGTH 11
 
 function MovementTick_Init() {
@@ -33,9 +40,15 @@ function MovementTick_Get() {
 	return global.movement_tick;
 }
 
+#endregion
+
+#region Bootstrap
+
 function GameState_Init() {
 	MovementTick_Init();
+	GameState_InitSkillsAndRng();
 	
+	// variable_global_exists guards keep flags across room transitions; rm_init overwrites skills on a cold boot.
 	if (!variable_global_exists("story_opening_seen")) {
 		global.story_opening_seen = false;
 	}
@@ -79,6 +92,35 @@ function GameState_Init() {
 	Quest_Init();
 }
 
+function GameState_InitSkillsAndRng() {
+	if (!variable_global_exists("rng_seeded")) {
+		randomize();
+		global.rng_seeded = true;
+	}
+	if (!variable_global_exists("woodcutting_level")) {
+		global.woodcutting_level = 1;
+	}
+	if (!variable_global_exists("woodcutting_xp")) {
+		global.woodcutting_xp = 0;
+	}
+	if (!variable_global_exists("mining_level")) {
+		global.mining_level = 1;
+	}
+	if (!variable_global_exists("mining_xp")) {
+		global.mining_xp = 0;
+	}
+	if (!variable_global_exists("smelting_level")) {
+		global.smelting_level = 1;
+	}
+	if (!variable_global_exists("smelting_xp")) {
+		global.smelting_xp = 0;
+	}
+}
+
+#endregion
+
+#region Welcomer Flow
+
 function GameState_IsWelcomerIntroComplete() {
 	return variable_global_exists("welcomer_intro_complete") && global.welcomer_intro_complete;
 }
@@ -98,6 +140,10 @@ function GameState_SetWelcomerGuidedTourComplete(_complete = true) {
 function GameState_IsStoryPromptEnabled() {
 	return variable_global_exists("story_opening_prompt_enabled") && global.story_opening_prompt_enabled;
 }
+
+#endregion
+
+#region Welcomer Briefing
 
 function GameState_HasBriefingHeard(_topic) {
 	switch (_topic) {
@@ -148,6 +194,10 @@ function GameState_GetBriefingRemainingCount() {
 	return remaining;
 }
 
+#endregion
+
+#region Second Chance Trial
+
 function GameState_IsSecondChanceTrialStarted() {
 	return variable_global_exists("welcomer_approval_started") && global.welcomer_approval_started;
 }
@@ -171,3 +221,5 @@ function GameState_SetWoodcuttingAcknowledged(_acknowledged = true) {
 function GameState_SetWoodcuttingMarkApproved(_approved = true) {
 	global.welcomer_woodcutting_approved = _approved;
 }
+
+#endregion

@@ -1,4 +1,9 @@
+/// @description Welcomer NPC: guided tour state, walking animation, DialogueWelcomer session entry.
+
 event_inherited();
+
+#region Identity
+
 sprite_index = spr_welcomer
 visible = true
 
@@ -13,6 +18,10 @@ walk_anim_frame = 0
 walk_anim_speed = 0.18
 face_player_while_dialogue = false
 
+#endregion
+
+#region Guided Tour State
+
 guided_tour_active = false
 guided_step_index = 0
 guided_steps = []
@@ -26,6 +35,10 @@ guided_home_y = y
 guided_walk_speed = 1.6
 intro_dialogue_node = ""
 intro_branches_asked = []
+
+#endregion
+
+#region Facing And Animation
 
 SetFacingFromMovement = function(_move_x, _move_y) {
 	if (_move_x == 0 && _move_y > 0) {
@@ -81,6 +94,10 @@ UpdateWelcomerAnimation = function() {
 	image_speed = 0
 }
 
+#endregion
+
+#region Dialogue Menu
+
 OpenDialogueMenu = function() {
 	if (!GameState_IsSecondChanceTrialStarted() && !GameState_IsWelcomerGuidedTourComplete()) {
 		GuidedIntro_StartWelcomerTour(id);
@@ -104,3 +121,5 @@ interact = function(_player) {
 	}
 	Dialogue_InteractNpc(id, _player)
 }
+
+#endregion

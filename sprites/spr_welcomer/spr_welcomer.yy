@@ -57,7 +57,7 @@
   "origin":7,
   "parent":{
     "name":"Welcomer",
-    "path":"folders/Sprites/PlayerAndNPC/Welcomer.yy",
+    "path":"folders/Sprites/Actors/NPCs/Welcomer.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

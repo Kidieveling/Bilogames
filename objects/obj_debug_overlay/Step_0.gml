@@ -1,3 +1,7 @@
+/// @description Smooth FPS/frame-time sampling; spike flash when a frame exceeds ~2× 60fps budget.
+
+#region Toggle
+
 if (keyboard_check_pressed(vk_f3)) {
 	global.debug_overlay_enabled = !global.debug_overlay_enabled;
 	enabled = global.debug_overlay_enabled;
@@ -6,6 +10,10 @@ if (keyboard_check_pressed(vk_f3)) {
 if (!enabled) {
 	exit;
 }
+
+#endregion
+
+#region Metrics
 
 var frame_ms = delta_time / 1000;
 fps_display = lerp(fps_display, fps_real, fps_smooth);
@@ -26,3 +34,5 @@ if (frame_ms > 33) {
 
 anim_frame = (anim_frame + anim_speed) mod walk_frames;
 pulse_timer += 1;
+
+#endregion

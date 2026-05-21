@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Pathfinding",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Pathfinding",
+  "parent":{
+    "name":"Controller",
+    "path":"folders/Scripts/Systems/Controller.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

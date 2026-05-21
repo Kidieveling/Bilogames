@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ContextMenu",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ContextMenu",
+  "parent":{
+    "name":"Controller",
+    "path":"folders/Scripts/Systems/Controller.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

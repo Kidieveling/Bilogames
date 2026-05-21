@@ -1,6 +1,8 @@
-/// @description Quest progression helpers
+/// @description Second Chance Trial quest state (Timber Mark) and quest panel copy for obj_controller.
 
 #macro QUEST_WOODCUTTING_ITEM "Normal Log"
+
+#region Init And State
 
 function Quest_Init() {
 	if (!variable_global_exists("quest_woodcutting_state")) {
@@ -31,6 +33,10 @@ function Quest_Woodcutting_Start() {
 		global.quest_woodcutting_state = 1;
 	}
 }
+
+#endregion
+
+#region Progress And Completion
 
 function Quest_Woodcutting_GetProgress() {
 	var inventory = Quest_GetPlayerInventory();
@@ -63,6 +69,10 @@ function Quest_Woodcutting_Complete() {
 	AddSkillXP("Woodcutting", 50);
 	return true;
 }
+
+#endregion
+
+#region Quest Panel Copy
 
 function Quest_Woodcutting_GetQuestInfo() {
 	var questState = global.quest_woodcutting_state;
@@ -115,3 +125,5 @@ function Quest_Woodcutting_GetQuestInfo() {
 		progress_amount: questProgressAmount
 	};
 }
+
+#endregion

@@ -6,7 +6,7 @@
   "name":"DialogueWelcomer",
   "parent":{
     "name":"Welcomer",
-    "path":"folders/Scripts/Welcomer.yy",
+    "path":"folders/Scripts/Actors/NPCs/Welcomer.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

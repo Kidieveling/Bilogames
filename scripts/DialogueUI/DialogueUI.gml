@@ -1,4 +1,6 @@
-/// @description Bottom-center cinematic dialogue panel layout helpers
+/// @description Bottom-center cinematic dialogue panel layout (GUI space) and speaker line parsing.
+
+#region Layout Macros
 
 #macro DIALOGUEUI_WIDTH_FACTOR 0.70
 #macro DIALOGUEUI_MIN_HEIGHT 150
@@ -10,8 +12,10 @@
 #macro DIALOGUEUI_CHOICE_ROW_HEIGHT 24
 #macro DIALOGUEUI_CHOICE_TOP_GAP 8
 
-/// @param {Real} _height Optional panel height in GUI pixels (clamped to min/max)
-/// @returns {Struct} { x1, y1, x2, y2, w, h, padding }
+#endregion
+
+#region Panel Rect
+
 function DialogueUI_GetPanelRect(_height = undefined) {
 	var gui_w = display_get_gui_width();
 	var gui_h = display_get_gui_height();
@@ -39,8 +43,11 @@ function DialogueUI_GetPanelRect(_height = undefined) {
 	};
 }
 
-/// @param {String} _line Full line, often "Speaker: body"
-/// @returns {Struct} { speaker, body }
+#endregion
+
+#region Speaker Parsing
+
+// "Name: body" split; cap prefix length so map labels like "Copper Node: ..." are not treated as speakers.
 function DialogueUI_ParseFormattedLine(_line) {
 	var sep = string_pos(":", _line);
 	if (sep > 1 && sep <= 48) {
@@ -56,8 +63,6 @@ function DialogueUI_ParseFormattedLine(_line) {
 	return { speaker: "", body: _line };
 }
 
-/// @param {Id.Instance} _speaker
-/// @returns {String}
 function DialogueUI_GetSpeakerName(_speaker) {
 	if (!instance_exists(_speaker)) {
 		return "";
@@ -67,3 +72,5 @@ function DialogueUI_GetSpeakerName(_speaker) {
 	}
 	return "";
 }
+
+#endregion

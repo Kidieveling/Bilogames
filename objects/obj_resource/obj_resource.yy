@@ -10,7 +10,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Resources",
-    "path":"folders/Objects/Items/Resources.yy",
+    "path":"folders/Objects/World/Resources.yy",
   },
   "parentObjectId":null,
   "persistent":false,

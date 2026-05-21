@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"GUI",
-    "path":"folders/Sprites/GUI.yy",
+    "name":"Cursor",
+    "path":"folders/Sprites/UI/Cursor.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

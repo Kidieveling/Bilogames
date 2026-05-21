@@ -9,7 +9,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"Init",
-    "path":"folders/Objects/Init.yy",
+    "path":"folders/Objects/World/Init.yy",
   },
   "parentObjectId":null,
   "persistent":false,

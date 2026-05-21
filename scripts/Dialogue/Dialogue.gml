@@ -1,4 +1,6 @@
-/// @description Shared NPC dialogue session helpers
+/// @description Thin API over obj_dialogue: ensure instance, set speaker, menus, paced conversations, NPC interact.
+
+#region Instance Access
 
 function Dialogue_EnsureInstance() {
 	if (!instance_exists(obj_dialogue)) {
@@ -25,6 +27,10 @@ function Dialogue_SetSpeaker(_speaker) {
 	}
 }
 
+#endregion
+
+#region Menus And Conversations
+
 function Dialogue_PresentMenu(_speaker, _text, _choices) {
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {
@@ -48,6 +54,10 @@ function Dialogue_OpenMenu(_speaker) {
 		OpenDialogueMenu();
 	}
 }
+
+#endregion
+
+#region Responses And Close
 
 function Dialogue_ShowResponse(_speaker, _text, _okText = "OK") {
 	if (!instance_exists(_speaker)) {
@@ -91,6 +101,10 @@ function Dialogue_MakeGoodbyeChoice() {
 	};
 }
 
+#endregion
+
+#region NPC Interact
+
 function Dialogue_InteractNpc(_speaker, _player) {
 	if (!instance_exists(_speaker)) {
 		return;
@@ -111,3 +125,5 @@ function Dialogue_InteractNpc(_speaker, _player) {
 	
 	Dialogue_OpenMenu(_speaker);
 }
+
+#endregion

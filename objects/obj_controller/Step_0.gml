@@ -1,6 +1,13 @@
-/// @description Control Fixed UI
+/// @description Fixed UI input: tab switching, inventory hover preview, middle-click drag reorder.
+/// World clicks are handled on obj_player — this event only touches the menu chrome.
+
+#region Cursor
 
 window_set_cursor(cr_none);
+
+#endregion
+
+#region Menu Tabs
 
 if (mouse_check_button_pressed(mb_left)) {
 	var viewWidth = room_width;
@@ -32,6 +39,10 @@ if (mouse_check_button_pressed(mb_left)) {
 		selectedMenuTab = menuTabQuests;
 	}
 }
+
+#endregion
+
+#region Inventory Drag
 
 var viewWidth = room_width;
 var viewHeight = room_height;
@@ -70,6 +81,7 @@ if (selectedMenuTab == menuTabInventory && ds_exists(myItems, ds_type_grid)) {
 	if (hoveredSlot != undefined) {
 		currentItemSlot = hoveredSlot;
 		
+		// Hidden menu-layer instance powers tooltip text without drawing in the grid cell.
 		if (!draggingItem && !itemLocked && (hoveredItemSlot != hoveredSlot || currentItem == undefined || !instance_exists(currentItem))) {
 			if (currentItem != undefined && instance_exists(currentItem) && variable_instance_exists(currentItem, "isInMenu") && currentItem.isInMenu) {
 				instance_destroy(currentItem);
@@ -107,6 +119,7 @@ if (selectedMenuTab == menuTabInventory && ds_exists(myItems, ds_type_grid)) {
 	if (mouse_check_button_pressed(mb_middle)) {
 		draggedItemSlot = currentItemSlot;
 	}
+	// Defer grid swap to Alarm 0 so release and press are not confused in one frame.
 	if (mouse_check_button_released(mb_middle) && draggedItem != undefined && instance_exists(draggedItem)) {
 		draggedItem.x = -100;
 		draggedItem.y = -100;
@@ -124,3 +137,5 @@ if (selectedMenuTab == menuTabInventory && ds_exists(myItems, ds_type_grid)) {
 	}
 	currentItem = undefined;
 }
+
+#endregion

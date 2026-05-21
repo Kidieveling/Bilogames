@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"GuidedIntro",
   "parent":{
-    "name":"Welcomer",
-    "path":"folders/Scripts/Welcomer.yy",
+    "name":"GuidedIntro",
+    "path":"folders/Scripts/Systems/GuidedIntro.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

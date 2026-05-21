@@ -1,4 +1,8 @@
+/// @description Smelting station; consumes ore from inventory, no auto-gather loop.
+
 event_inherited();
+
+#region Creation Code
 
 sprite_index = spr_furnace;
 
@@ -16,3 +20,5 @@ item_price = 1;
 item_object = obj_copper_bar;
 xp_reward = 25;
 gather_cooldown_max = 45;
+
+#endregion

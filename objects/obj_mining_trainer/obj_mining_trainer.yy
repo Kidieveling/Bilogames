@@ -8,8 +8,8 @@
   "name":"obj_mining_trainer",
   "overriddenProperties":[],
   "parent":{
-    "name":"PlayerAndNpc",
-    "path":"folders/Objects/PlayerAndNpc.yy",
+    "name":"Trainers",
+    "path":"folders/Objects/Actors/NPCs/Trainers.yy",
   },
   "parentObjectId":{
     "name":"obj_npc",
