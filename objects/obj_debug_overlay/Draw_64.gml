@@ -1,89 +1,89 @@
-/// @description Draw GUI perf panel (F3); red flash on frame hitch, animated sprite heartbeat.
+/// @description Draw GUI debug panels (F1–F4).
 
-if (!enabled) {
+if (!DebugOverlay_AnyPanelActive()) {
 	exit;
 }
-
-#region Panel Background
-
-var panel_x = 8;
-var panel_y = 8;
-var panel_w = 210;
-var panel_h = 118;
-var line_h = 14;
-var text_x = panel_x + 6;
-var text_y = panel_y + 6;
-
-draw_set_alpha(0.8);
-draw_set_color(c_black);
-draw_rectangle(panel_x, panel_y, panel_x + panel_w, panel_y + panel_h, false);
-draw_set_alpha(1);
-
-if (spike_flash > 0) {
-	draw_set_alpha(0.35);
-	draw_set_color(c_red);
-	draw_rectangle(panel_x, panel_y, panel_x + panel_w, panel_y + panel_h, false);
-	draw_set_alpha(1);
-}
-
-#endregion
-
-#region Metrics Text
 
 draw_set_font(fntSmaller);
 draw_set_halign(fa_left);
 draw_set_valign(fa_top);
 
-var fps_color = c_lime;
-if (fps_display < 55) {
-	fps_color = c_yellow;
+var panel_x = 8;
+var panel_y = 8;
+var panel_gap = 6;
+var hint_y = display_get_gui_height() - 18;
+
+#region Perf Panel (F1)
+
+if (show_perf) {
+	var perf_w = 210;
+	var perf_h = 118;
+	var text_x = panel_x + 6;
+	var text_y = panel_y + 6;
+	var line_h = 14;
+	
+	draw_set_alpha(0.8);
+	draw_set_color(c_black);
+	draw_rectangle(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, false);
+	draw_set_alpha(1);
+	
+	if (spike_flash > 0) {
+		draw_set_alpha(0.35);
+		draw_set_color(c_red);
+		draw_rectangle(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, false);
+		draw_set_alpha(1);
+	}
+	
+	var fps_color = c_lime;
+	if (fps_display < 55) fps_color = c_yellow;
+	if (fps_display < 30) fps_color = c_red;
+	var ms_color = c_white;
+	if (frame_ms_display > 20) ms_color = c_yellow;
+	if (frame_ms_display > 50) ms_color = c_red;
+	
+	draw_set_color(fps_color);
+	draw_text(text_x, text_y, "FPS: " + string(floor(fps_display)));
+	text_y += line_h;
+	draw_set_color(ms_color);
+	draw_text(text_x, text_y, "Frame: " + string_format(frame_ms_display, 1, 1) + " ms");
+	text_y += line_h;
+	draw_set_color(frame_ms_max > 33 ? c_red : c_ltgray);
+	draw_text(text_x, text_y, "Spike max: " + string_format(frame_ms_max, 1, 1) + " ms / 1s");
+	text_y += line_h;
+	draw_set_color(c_white);
+	draw_text(text_x, text_y, "Inst: " + string(instance_number(all)) + "  MenuItems: " + string(instance_number(objItemParent)));
+	
+	var anim_x = panel_x + perf_w - 36;
+	var anim_y = panel_y + perf_h - 40;
+	draw_sprite(spr_player, floor(anim_frame), anim_x, anim_y);
+	var pulse = 0.5 + 0.5 * sin(degtorad(pulse_timer * 12));
+	draw_set_color(make_color_rgb(255, 50 + 205 * pulse, 50 + 205 * (1 - pulse)));
+	draw_circle(anim_x - 14, anim_y + 18, 4 + 2 * pulse, false);
+	
+	panel_y += perf_h + panel_gap;
 }
-if (fps_display < 30) {
-	fps_color = c_red;
-}
-
-var ms_color = c_white;
-if (frame_ms_display > 20) {
-	ms_color = c_yellow;
-}
-if (frame_ms_display > 50) {
-	ms_color = c_red;
-}
-
-draw_set_color(fps_color);
-draw_text(text_x, text_y, "FPS: " + string(floor(fps_display)));
-text_y += line_h;
-
-draw_set_color(ms_color);
-draw_text(text_x, text_y, "Frame: " + string_format(frame_ms_display, 1, 1) + " ms");
-text_y += line_h;
-
-draw_set_color(frame_ms_max > 33 ? c_red : c_ltgray);
-draw_text(text_x, text_y, "Spike max: " + string_format(frame_ms_max, 1, 1) + " ms / 1s");
-text_y += line_h;
-
-draw_set_color(c_white);
-var menu_item_count = instance_number(objItemParent);
-draw_text(text_x, text_y, "Inst: " + string(instance_number(all)) + "  MenuItems: " + string(menu_item_count));
-text_y += line_h;
-
-draw_set_color(c_ltgray);
-draw_text(text_x, text_y, "F3 hide  |  red flash = hitch");
 
 #endregion
 
-#region Heartbeat Sprite
+#region Stacked Panels (F2–F4)
 
-var anim_x = panel_x + panel_w - 36;
-var anim_y = panel_y + panel_h - 40;
-draw_sprite(spr_player, floor(anim_frame), anim_x, anim_y);
+if (DebugOverlay_IsPanelActive(DEBUG_OVERLAY_QUEST)) {
+	panel_y += DebugOverlay_DrawPanel(panel_x, panel_y, "[F2] Quest", DebugOverlay_BuildQuestLines()) + panel_gap;
+}
+if (DebugOverlay_IsPanelActive(DEBUG_OVERLAY_DIALOGUE)) {
+	panel_y += DebugOverlay_DrawPanel(panel_x, panel_y, "[F3] Dialogue / GameState", DebugOverlay_BuildDialogueLines(), 340) + panel_gap;
+}
+if (DebugOverlay_IsPanelActive(DEBUG_OVERLAY_PATH)) {
+	panel_y += DebugOverlay_DrawPanel(panel_x, panel_y, "[F4] Pathfinding", DebugOverlay_BuildPathLines(), 320) + panel_gap;
+}
 
-var pulse = 0.5 + 0.5 * sin(degtorad(pulse_timer * 12));
-draw_set_color(make_color_rgb(255, 50 + 205 * pulse, 50 + 205 * (1 - pulse)));
-draw_circle(anim_x - 14, anim_y + 18, 4 + 2 * pulse, false);
+#endregion
+
+#region Hotkey Hint
+
+draw_set_color(c_ltgray);
+draw_text(panel_x, hint_y, "F1 perf  F2 quest  F3 dialogue  F4 path (toggle each)");
 
 draw_set_color(c_white);
-draw_set_halign(fa_left);
-draw_set_valign(fa_top);
 
 #endregion

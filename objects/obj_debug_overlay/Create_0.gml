@@ -1,17 +1,15 @@
-/// @description Singleton perf overlay; F3 toggles global.debug_overlay_enabled across rooms.
+/// @description Singleton dev HUD: F1 perf, F2 quest, F3 dialogue flags, F4 pathfinding.
 
 if (instance_number(obj_debug_overlay) > 1) {
 	instance_destroy(other);
 	exit;
 }
 
-#region State
+DebugOverlay_InitGlobals();
 
-if (!variable_global_exists("debug_overlay_enabled")) {
-	global.debug_overlay_enabled = true;
-}
+#region Perf Sampling State
 
-enabled = global.debug_overlay_enabled;
+show_perf = global.debug_panel_perf;
 fps_display = 60;
 fps_smooth = 0.12;
 frame_ms_display = 16.67;
@@ -24,3 +22,6 @@ pulse_timer = 0;
 spike_flash = 0;
 
 #endregion
+
+// Path lines and HUD panels draw above gameplay instances.
+depth = 10000;

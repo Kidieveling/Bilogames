@@ -117,6 +117,7 @@
     {"id":{"name":"DialogueTypewriter","path":"scripts/DialogueTypewriter/DialogueTypewriter.yy",},},
     {"id":{"name":"DialogueUI","path":"scripts/DialogueUI/DialogueUI.yy",},},
     {"id":{"name":"ContextMenu","path":"scripts/ContextMenu/ContextMenu.yy",},},
+    {"id":{"name":"DebugOverlay","path":"scripts/DebugOverlay/DebugOverlay.yy",},},
     {"id":{"name":"DialogueWelcomer","path":"scripts/DialogueWelcomer/DialogueWelcomer.yy",},},
     {"id":{"name":"DialogueWelcomerData","path":"scripts/DialogueWelcomerData/DialogueWelcomerData.yy",},},
     {"id":{"name":"GameState","path":"scripts/GameState/GameState.yy",},},
