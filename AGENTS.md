@@ -20,6 +20,20 @@ Target modern GameMaker runtime and current GML syntax. Prefer production-qualit
 - Do not silently replace established systems. Extend the local pattern already used by the repository.
 - Do not revert user changes unless explicitly asked.
 
+## Naming Conventions
+
+Follow **`NAMING.md`** for all new assets and public APIs.
+
+- **Objects / sprites / rooms:** `obj_`, `spr_`, `rm_` (required). No new `scr_` script assets.
+- **Scripts:** feature-first — script asset + folder (`DialogueConversation`, `Quest`, `PlayerMovement`); functions `<Feature>_<Action>` (`DialogueConversation_Start`, `Quest_Init`).
+- **Sub-features:** split by PascalCase script assets (`DialogueWelcomer`, `DialogueWelcomerData`, `PlayerInteraction`), not short prefixes (`dlg_`, `gs_`).
+- **Macros:** `FEATURE_CONSTANT` (e.g. `DIALOGUE_BEAT_LINE`, `QUEST_WOODCUTTING_ITEM`).
+- **Register:** `<Feature>_Register(_inst)` from object Create to bind instance methods.
+- **Legacy:** `Pathfinding`, `ContextMenu`, `UIHelpers`, and unprefixed `Inventory.gml` helpers — do not add new unprefixed globals; migrate when explicitly refactoring.
+- **Systems vs content:** See **`NAMING.md` → Systems vs content**. Story copy in `*Data` scripts; quest/briefing gates in `WelcomerProgress` / `GameState` / `Quest`; reusable dialogue in `Dialogue*` only. Do not mix layers in one file.
+- **UI draw:** Use `UIDraw` helpers (`UI_DrawPanel`, `UI_DrawBorderedPanel`, `UI_DrawChoiceList`) in Draw GUI instead of ad-hoc `draw_rectangle` / `draw_set_alpha` blocks.
+- **Create events:** Thin only — defaults + `*_Register(id)` or `ItemsCatalog_Bootstrap()`. No dialogue trees, quest logic, or item lists in Create. See **`NAMING.md` → Create events**.
+
 ## GML Standards
 
 - Prefer functions, structs, constructors, and methods over legacy patterns.
@@ -162,9 +176,9 @@ Important folders:
 
 Known systems in this project:
 
-- Player tile movement in `objects/obj_player`.
-- Click movement, right-click context menu, path helpers, inventory UI, skill UI, and quest UI in `objects/obj_controller`.
-- Dialogue, prompts, notices, and choice handling in `objects/obj_dialogue`.
+- Player tile movement in `objects/obj_player` via `PlayerMovement`, `PlayerPathing`, `PlayerInteraction`, `PlayerAnimation` scripts.
+- Click movement, right-click context menu, pathfinding, inventory UI, skill UI, and quest UI in `objects/obj_controller` via `Pathfinding`, `ContextMenu`, `ControllerUI`, `UIHelpers`.
+- Dialogue instance state in `objects/obj_dialogue`; session API, beats, layout, and input in `DialogueSession`, `DialogueConversation`, `DialogueLayout`, `DialogueInput`, etc. Welcomer copy in `DialogueWelcomerData`; Welcomer flow gates in `WelcomerProgress`; director in `DialogueWelcomer`.
 - NPC dialogue and trainer interaction in `objects/obj_npc` and room instance creation code.
 - Resource nodes, auto-gathering, depletion, respawning, and smelting-style resource conversion in `objects/obj_resource`.
 - Inventory and item helpers in `scripts/Inventory/Inventory.gml`.
@@ -180,7 +194,7 @@ Known systems in this project:
 - UI clicks must not leak into world movement.
 - Context menus should draw above world objects and should use the existing controller menu state unless refactoring is explicitly requested.
 - Use the existing dialogue object for NPC text, prompts, and notices.
-- Trainer dialogue should support the progression pillar: Welcomer approval, skill tasks, gathering/crafting, and long-term progression.
+- Trainer dialogue should support the progression pillar: Welcomer approval, skill tasks, gathering/crafting, and long-term progression. Menu NPCs: `DialogueWoodcuttingTrainer_Open` pattern (`GetGreeting`, `BuildChoices`, `Dialogue_PresentMenu`); Welcomer: `DialogueWelcomer_Open`. Objects only delegate from `OpenDialogueMenu`.
 - Resource nodes use `resource_name`, `resource_action`, `resource_skill`, required level/tool/resource fields, depletion, and respawn settings. Preserve that data-driven pattern.
 - Depleted resources should not offer normal gather prompts or context actions.
 - Inventory data currently uses DS grids. Any future inventory refactor must include migration and cleanup planning.

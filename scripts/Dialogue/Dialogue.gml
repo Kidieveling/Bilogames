@@ -31,6 +31,9 @@ function Dialogue_SetSpeaker(_speaker) {
 
 #region Menus And Conversations
 
+/// Standard NPC menu: *_Open on Dialogue* script sets greeting + choices, then present.
+/// Example: DialogueWoodcuttingTrainer_Open(_trainer) → GetGreeting + BuildChoices + Dialogue_PresentMenu.
+
 function Dialogue_PresentMenu(_speaker, _text, _choices) {
 	Dialogue_EnsureInstance();
 	with (obj_dialogue) {

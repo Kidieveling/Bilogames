@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ControllerUI",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ControllerUI",
+  "parent":{
+    "name":"Controller",
+    "path":"folders/Scripts/Systems/Controller.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

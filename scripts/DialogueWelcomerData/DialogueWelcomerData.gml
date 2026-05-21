@@ -18,7 +18,7 @@ function DialogueWelcomerData_GetIntroNodePrompt(_node_id) {
 		case DIALOGUE_WELCOMER_NODE_TRIAL:
 			return "Marks are how strangers become people Hearthmere can count on. The Second Chance Trial is how you earn that here.";
 		case DIALOGUE_WELCOMER_NODE_CATCHUP:
-			if (GameState_GetBriefingRemainingCount() > 0) {
+			if (WelcomerProgress_CatchupHasBriefingGaps()) {
 				return "You still have gaps in what you were told. Ask while I have the patience.";
 			}
 			return "You have heard the essentials. If you are ready to be judged by finished work instead of a missing past, say so.";
@@ -164,6 +164,57 @@ function DialogueWelcomerData_GetBranchBeats(_branch_id) {
 			];
 	}
 	return [DialogueBeat_Line(w, "That is the shape of it. Ask again if something still will not settle.", 14)];
+}
+
+#endregion
+
+#region Trial Session Copy
+
+function DialogueWelcomerData_GetTrialSessionBeats(_phase) {
+	var w = DIALOGUE_WELCOMER_NAME;
+	var beats = [];
+	switch (_phase) {
+		case "not_started":
+			array_push(beats, DialogueBeat_Line(w, "Your Second Chance Trial is underway.", 16));
+			array_push(beats, DialogueBeat_Pause(12));
+			array_push(beats, DialogueBeat_Line(w, "Earn Marks from the trainers — witnessed proof that you can finish useful work. Start with the Timber Mark.", 20));
+			break;
+		case "timber_active":
+			array_push(beats, DialogueBeat_Line(w, "Still working toward your Timber Mark?", 14));
+			array_push(beats, DialogueBeat_Pause(10));
+			array_push(beats, DialogueBeat_Line(w, "Good. Hearthmere has no patience for half-finished duty. Neither do I.", 18));
+			break;
+		case "timber_pending_ack":
+			array_push(beats, DialogueBeat_Line(w, "The Woodcutting Trainer endorsed your timber work.", 16));
+			array_push(beats, DialogueBeat_Pause(12));
+			array_push(beats, DialogueBeat_Line(w, "Your first Mark is on record. That is more identity than you arrived with.", 20));
+			break;
+		case "timber_complete":
+			array_push(beats, DialogueBeat_Line(w, "Timber Mark recorded.", 14));
+			array_push(beats, DialogueBeat_Pause(10));
+			array_push(beats, DialogueBeat_Line(w, "Next, prove you can pull ore from ground that would rather keep it. Speak with the Mining Trainer.", 22));
+			break;
+		default:
+			array_push(beats, DialogueBeat_Line(w, "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk.", 18));
+			break;
+	}
+	return beats;
+}
+
+function DialogueWelcomerData_GetAcceptTrialBeats() {
+	var w = DIALOGUE_WELCOMER_NAME;
+	return [
+		DialogueBeat_Line(w, "Then it is on record.", 16),
+		DialogueBeat_Pause(14),
+		DialogueBeat_Line(w, "Your Second Chance Trial begins now.", 16),
+		DialogueBeat_Pause(12),
+		DialogueBeat_Line(w, "Sleep inside the walls. Work under supervision.", 16),
+		DialogueBeat_Pause(12),
+		DialogueBeat_Line(w, "Earn Marks from the trainers when you return with proof, not promises.", 20),
+		DialogueBeat_Pause(14),
+		DialogueBeat_Line(w, "Start with the Woodcutting Trainer and earn your Timber Mark.", 22),
+		DialogueBeat_Pause(18)
+	];
 }
 
 #endregion

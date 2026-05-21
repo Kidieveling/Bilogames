@@ -165,12 +165,7 @@ function UIHelpers_Register(_inst) {
 			panelX = clamp(panelX, viewLeft + 8, viewRight - panelWidth - 8);
 			panelY = clamp(panelY, viewTop + 8, viewBottom - panelHeight - 8);
 			
-			draw_set_alpha(0.9);
-			draw_set_color(c_black);
-			draw_rectangle(panelX, panelY, panelX + panelWidth, panelY + panelHeight, false);
-			draw_set_alpha(1);
-			draw_set_color(c_white);
-			draw_rectangle(panelX, panelY, panelX + panelWidth, panelY + panelHeight, true);
+			UI_DrawBorderedPanel(panelX, panelY, panelX + panelWidth, panelY + panelHeight, c_black, 0.9, c_white, 1);
 			
 			draw_set_font(fntSmaller);
 			draw_set_color(c_white);

@@ -346,7 +346,7 @@ function Pathfinding_Register(_inst) {
 			}
 			
 			with (_player) {
-				TileMovement_SetPath(_path_points);
+				PlayerPathing_SetPath(_path_points);
 			}
 			
 			return true;
@@ -439,9 +439,7 @@ function Pathfinding_Register(_inst) {
 			}
 			
 			with (_player) {
-				click_path = [];
-				click_path_index = 0;
-				pending_click_move = false;
+				PlayerPathing_ClearClickPath();
 				pending_click_target = noone;
 				pending_click_action = "";
 				pending_click_action_label = "";

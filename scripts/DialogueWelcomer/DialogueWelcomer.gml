@@ -1,4 +1,4 @@
-/// @description Welcomer flow orchestration: tour vs briefing vs trial session; delegates copy to DialogueWelcomerData.
+/// @description Welcomer dialogue director: nodes, branches, trial menu. Copy → DialogueWelcomerData; flags → WelcomerProgress.
 
 #region Topic And Node Macros
 
@@ -23,31 +23,40 @@
 
 #region Session Entry
 
-function DialogueWelcomer_BeginSession(_welcomer) {
+/// Public entry from obj_welcomer OpenDialogueMenu — routes tour, trial session, or briefing nodes.
+function DialogueWelcomer_Open(_welcomer) {
 	if (!instance_exists(_welcomer)) {
 		return;
 	}
 	if (GuidedIntro_IsTourActive(_welcomer)) {
 		return;
 	}
-	
-	if (GameState_IsSecondChanceTrialStarted()) {
-		DialogueConversation_Start(_welcomer, DialogueWelcomer_BuildTrialSession(_welcomer));
-	} else if (!GameState_IsWelcomerGuidedTourComplete()) {
+	if (!GameState_IsSecondChanceTrialStarted() && !GameState_IsWelcomerGuidedTourComplete()) {
 		GuidedIntro_StartWelcomerTour(_welcomer);
+		return;
+	}
+	with (_welcomer) {
+		face_player_while_dialogue = true;
+	}
+	if (WelcomerProgress_ShouldRunTrialSession()) {
+		DialogueConversation_Start(_welcomer, DialogueWelcomer_BuildTrialSession(_welcomer));
 	} else {
 		DialogueWelcomer_StartPostTourBriefing(_welcomer);
 	}
 }
 
-function DialogueWelcomer_StartPostTourBriefing(_welcomer) {
-	if (GameState_IsWelcomerBriefingComplete()) {
-		DialogueWelcomer_PlayIntroNode(_welcomer, DIALOGUE_WELCOMER_NODE_TRIAL_DECISION, false);
-	} else if (!GameState_HasBriefingHeard(GAMESTATE_BRIEF_MARKLESS)) {
-		DialogueWelcomer_PlayIntroNode(_welcomer, DIALOGUE_WELCOMER_NODE_MARKLESS, false);
-	} else {
-		DialogueWelcomer_PlayIntroNode(_welcomer, DIALOGUE_WELCOMER_NODE_CATCHUP, false);
+function DialogueWelcomer_AcceptSecondChanceTrial(_welcomer) {
+	if (!instance_exists(_welcomer)) {
+		return;
 	}
+	if (GuidedIntro_IsTourActive(_welcomer)) {
+		GuidedIntro_EndTour(_welcomer);
+	}
+	DialogueConversation_Start(_welcomer, DialogueWelcomer_AcceptTrialBeats(_welcomer));
+}
+
+function DialogueWelcomer_StartPostTourBriefing(_welcomer) {
+	DialogueWelcomer_PlayIntroNode(_welcomer, WelcomerProgress_GetPostTourIntroNode(), false);
 }
 
 #endregion
@@ -102,14 +111,7 @@ function DialogueWelcomer_MarkBranchAsked(_welcomer, _branch_id) {
 #region Branch Availability
 
 function DialogueWelcomer_IsBranchAvailable(_branch, _node_id, _welcomer) {
-	if (_node_id == DIALOGUE_WELCOMER_NODE_CATCHUP) {
-		// Catch-up node surfaces any briefing topic not yet heard, not only branches tied to this node id.
-		return !GameState_HasBriefingHeard(_branch.topic);
-	}
-	if (_branch.node != _node_id) {
-		return false;
-	}
-	return !DialogueWelcomer_HasAskedBranch(_welcomer, _branch.id);
+	return WelcomerProgress_IsBranchAvailable(_branch, _node_id, _welcomer);
 }
 
 function DialogueWelcomer_NodeHasOpenBranches(_welcomer, _node_id) {
@@ -138,7 +140,6 @@ function DialogueWelcomer_BuildIntroNodeChoices(_welcomer, _node_id) {
 		if (!DialogueWelcomer_IsBranchAvailable(branch, _node_id, _welcomer)) {
 			continue;
 		}
-		// self.* on the choice struct — GML closures need explicit fields, not other/id from the builder scope.
 		array_push(choices, {
 			text: branch.text,
 			welcomer: _welcomer,
@@ -151,7 +152,7 @@ function DialogueWelcomer_BuildIntroNodeChoices(_welcomer, _node_id) {
 	}
 	
 	if (_node_id == DIALOGUE_WELCOMER_NODE_TRIAL_DECISION) {
-		if (GameState_IsWelcomerBriefingComplete() && !GameState_IsSecondChanceTrialStarted()) {
+		if (WelcomerProgress_CanOfferTrialAcceptance()) {
 			array_push(choices, {
 				text: "I accept the Second Chance Trial.",
 				welcomer: _welcomer,
@@ -181,7 +182,7 @@ function DialogueWelcomer_BuildIntroNodeChoices(_welcomer, _node_id) {
 		});
 	}
 	
-	if (_node_id == DIALOGUE_WELCOMER_NODE_CATCHUP && GameState_IsWelcomerBriefingComplete()) {
+	if (_node_id == DIALOGUE_WELCOMER_NODE_CATCHUP && WelcomerProgress_CanOfferTrialAcceptance()) {
 		array_push(choices, {
 			text: "I accept the Second Chance Trial.",
 			welcomer: _welcomer,
@@ -244,7 +245,7 @@ function DialogueWelcomer_PlayIntroBranch(_welcomer, _branch_id, _return_node) {
 	}
 	
 	_welcomer.intro_dialogue_node = _return_node;
-	var beats = DialogueWelcomer_BuildIntroBranchBeats(_branch_id);
+	var beats = DialogueWelcomerData_GetBranchBeats(_branch_id);
 	var gs_key = DialogueWelcomer_GetBranchTopicKey(_branch_id);
 	array_insert(beats, 0, {
 		type: DIALOGUE_BEAT_ACTION,
@@ -280,7 +281,7 @@ function DialogueWelcomer_OnIntroNodeContinue(_welcomer, _node_id) {
 	}
 	
 	if (_node_id == DIALOGUE_WELCOMER_NODE_TRIAL || _node_id == DIALOGUE_WELCOMER_NODE_CATCHUP) {
-		if (GameState_IsWelcomerBriefingComplete()) {
+		if (WelcomerProgress_IsBriefingComplete()) {
 			DialogueWelcomer_PlayIntroNode(_welcomer, DIALOGUE_WELCOMER_NODE_TRIAL_DECISION, false);
 		} else {
 			DialogueWelcomer_PlayIntroNode(_welcomer, DIALOGUE_WELCOMER_NODE_CATCHUP, false);
@@ -293,83 +294,10 @@ function DialogueWelcomer_OnIntroNodeContinue(_welcomer, _node_id) {
 
 #endregion
 
-#region Legacy Topic Menu
-
-function DialogueWelcomer_BuildIntroBranchBeats(_branch_id) {
-	return DialogueWelcomerData_GetBranchBeats(_branch_id);
-}
-
-function DialogueWelcomer_PlayTopic(_welcomer, _topic_id) {
-	var branch_id = "";
-	switch (_topic_id) {
-		case DIALOGUE_WELCOMER_TOPIC_WHAT: branch_id = "what_happened"; break;
-		case DIALOGUE_WELCOMER_TOPIC_MARKLESS: branch_id = "what_markless"; break;
-		case DIALOGUE_WELCOMER_TOPIC_HEARTHMERE: branch_id = "what_is_hearthmere"; break;
-		case DIALOGUE_WELCOMER_TOPIC_SPONSOR: branch_id = "who_decided"; break;
-		case DIALOGUE_WELCOMER_TOPIC_MARKS: branch_id = "what_is_mark"; break;
-		case DIALOGUE_WELCOMER_TOPIC_TRIAL: branch_id = "what_is_trial"; break;
-	}
-	if (branch_id == "") {
-		return;
-	}
-	var return_node = GameState_IsWelcomerBriefingComplete()
-		? DIALOGUE_WELCOMER_NODE_TRIAL_DECISION
-		: DIALOGUE_WELCOMER_NODE_CATCHUP;
-	DialogueWelcomer_PlayIntroBranch(_welcomer, branch_id, return_node);
-}
-
-function DialogueWelcomer_IsTopicHeard(_topic_id) {
-	switch (_topic_id) {
-		case DIALOGUE_WELCOMER_TOPIC_WHAT: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_WHAT_HAPPENED);
-		case DIALOGUE_WELCOMER_TOPIC_MARKLESS: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_MARKLESS);
-		case DIALOGUE_WELCOMER_TOPIC_HEARTHMERE: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_HEARTHMERE);
-		case DIALOGUE_WELCOMER_TOPIC_SPONSOR: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_SPONSOR);
-		case DIALOGUE_WELCOMER_TOPIC_MARKS: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_MARKS);
-		case DIALOGUE_WELCOMER_TOPIC_TRIAL: return GameState_HasBriefingHeard(GAMESTATE_BRIEF_TRIAL_INFO);
-	}
-	return true;
-}
-
-function DialogueWelcomer_GetTopicChoiceLabel(_topic_id) {
-	switch (_topic_id) {
-		case DIALOGUE_WELCOMER_TOPIC_WHAT: return "What happened to me?";
-		case DIALOGUE_WELCOMER_TOPIC_MARKLESS: return "What does Markless mean?";
-		case DIALOGUE_WELCOMER_TOPIC_HEARTHMERE: return "What is Hearthmere?";
-		case DIALOGUE_WELCOMER_TOPIC_SPONSOR: return "Who vouched for me?";
-		case DIALOGUE_WELCOMER_TOPIC_MARKS: return "What is a Mark?";
-		case DIALOGUE_WELCOMER_TOPIC_TRIAL: return "What is the Second Chance Trial?";
-	}
-	return "Ask something.";
-}
-
-#endregion
-
 #region Trial Session
 
 function DialogueWelcomer_BuildTrialSession(_welcomer) {
-	var w = DIALOGUE_WELCOMER_NAME;
-	var beats = [];
-	
-	if (Quest_Woodcutting_GetState() == 0) {
-		array_push(beats, DialogueBeat_Line(w, "Your Second Chance Trial is underway.", 16));
-		array_push(beats, DialogueBeat_Pause(12));
-		array_push(beats, DialogueBeat_Line(w, "Earn Marks from the trainers — witnessed proof that you can finish useful work. Start with the Timber Mark.", 20));
-	} else if (Quest_Woodcutting_GetState() == 1) {
-		array_push(beats, DialogueBeat_Line(w, "Still working toward your Timber Mark?", 14));
-		array_push(beats, DialogueBeat_Pause(10));
-		array_push(beats, DialogueBeat_Line(w, "Good. Hearthmere has no patience for half-finished duty. Neither do I.", 18));
-	} else if (GameState_IsWoodcuttingMarkApproved() && !GameState_IsWoodcuttingAcknowledged()) {
-		array_push(beats, DialogueBeat_Line(w, "The Woodcutting Trainer endorsed your timber work.", 16));
-		array_push(beats, DialogueBeat_Pause(12));
-		array_push(beats, DialogueBeat_Line(w, "Your first Mark is on record. That is more identity than you arrived with.", 20));
-	} else if (GameState_IsWoodcuttingMarkApproved()) {
-		array_push(beats, DialogueBeat_Line(w, "Timber Mark recorded.", 14));
-		array_push(beats, DialogueBeat_Pause(10));
-		array_push(beats, DialogueBeat_Line(w, "Next, prove you can pull ore from ground that would rather keep it. Speak with the Mining Trainer.", 22));
-	} else {
-		array_push(beats, DialogueBeat_Line(w, "Easy now. You are inside Hearthmere, which means someone important decided you were worth the risk.", 18));
-	}
-	
+	var beats = DialogueWelcomerData_GetTrialSessionBeats(WelcomerProgress_GetTrialPhase());
 	array_push(beats, DialogueBeat_Pause(14));
 	array_push(beats, DialogueBeat_Choices("", DialogueWelcomer_BuildTrialChoices(_welcomer)));
 	return beats;
@@ -377,54 +305,22 @@ function DialogueWelcomer_BuildTrialSession(_welcomer) {
 
 function DialogueWelcomer_BuildTrialChoices(_welcomer) {
 	var choices = [];
-	
-	if (Quest_Woodcutting_GetState() == 0) {
+	var menu = WelcomerProgress_GetTrialChoiceMenu();
+	for (var i = 0; i < array_length(menu); i++) {
+		var row = menu[i];
 		array_push(choices, {
-			text: "Where should I start?",
+			text: row.text,
 			welcomer: _welcomer,
-			reply: "start",
+			reply: row.reply_id,
+			acknowledge_timber: variable_struct_exists(row, "acknowledge_timber") && row.acknowledge_timber,
 			action: function() {
-				DialogueWelcomer_PlayTrialReply(self.welcomer, self.reply);
-			}
-		});
-	} else if (Quest_Woodcutting_GetState() == 1) {
-		array_push(choices, {
-			text: "I am on timber duty.",
-			welcomer: _welcomer,
-			reply: "timber_duty",
-			action: function() {
-				DialogueWelcomer_PlayTrialReply(self.welcomer, self.reply);
-			}
-		});
-	} else if (GameState_IsWoodcuttingMarkApproved() && !GameState_IsWoodcuttingAcknowledged()) {
-		array_push(choices, {
-			text: "I finished timber duty.",
-			welcomer: _welcomer,
-			reply: "timber_done",
-			action: function() {
-				GameState_SetWoodcuttingAcknowledged(true);
-				DialogueWelcomer_PlayTrialReply(self.welcomer, self.reply);
-			}
-		});
-	} else if (GameState_IsWoodcuttingMarkApproved()) {
-		array_push(choices, {
-			text: "What is next?",
-			welcomer: _welcomer,
-			reply: "next",
-			action: function() {
-				DialogueWelcomer_PlayTrialReply(self.welcomer, self.reply);
-			}
-		});
-		array_push(choices, {
-			text: "How is my trial going?",
-			welcomer: _welcomer,
-			reply: "progress",
-			action: function() {
+				if (self.acknowledge_timber) {
+					WelcomerProgress_OnTimberMarkAcknowledged();
+				}
 				DialogueWelcomer_PlayTrialReply(self.welcomer, self.reply);
 			}
 		});
 	}
-	
 	array_push(choices, Dialogue_MakeGoodbyeChoice());
 	return choices;
 }
@@ -439,23 +335,11 @@ function DialogueWelcomer_PlayTrialReply(_welcomer, _reply_id) {
 }
 
 function DialogueWelcomer_AcceptTrialBeats(_welcomer) {
-	return [
-		DialogueBeat_Action(function() {
-			GameState_StartSecondChanceTrial();
-			GameState_SetWelcomerIntroComplete(true);
-		}),
-		DialogueBeat_Line(DIALOGUE_WELCOMER_NAME, "Then it is on record.", 16),
-		DialogueBeat_Pause(14),
-		DialogueBeat_Line(DIALOGUE_WELCOMER_NAME, "Your Second Chance Trial begins now.", 16),
-		DialogueBeat_Pause(12),
-		DialogueBeat_Line(DIALOGUE_WELCOMER_NAME, "Sleep inside the walls. Work under supervision.", 16),
-		DialogueBeat_Pause(12),
-		DialogueBeat_Line(DIALOGUE_WELCOMER_NAME, "Earn Marks from the trainers when you return with proof, not promises.", 20),
-		DialogueBeat_Pause(14),
-		DialogueBeat_Line(DIALOGUE_WELCOMER_NAME, "Start with the Woodcutting Trainer and earn your Timber Mark.", 22),
-		DialogueBeat_Pause(18),
-		DialogueBeat_Choices("", [Dialogue_MakeGoodbyeChoice()])
-	];
+	return array_concat(
+		[DialogueBeat_Action(function() { WelcomerProgress_OnTrialAccepted(); })],
+		DialogueWelcomerData_GetAcceptTrialBeats(),
+		[DialogueBeat_Choices("", [Dialogue_MakeGoodbyeChoice()])]
+	);
 }
 
 #endregion

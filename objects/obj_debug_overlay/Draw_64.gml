@@ -22,16 +22,9 @@ if (show_perf) {
 	var text_y = panel_y + 6;
 	var line_h = 14;
 	
-	draw_set_alpha(0.8);
-	draw_set_color(c_black);
-	draw_rectangle(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, false);
-	draw_set_alpha(1);
-	
+	UI_DrawPanel(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, c_black, 0.8);
 	if (spike_flash > 0) {
-		draw_set_alpha(0.35);
-		draw_set_color(c_red);
-		draw_rectangle(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, false);
-		draw_set_alpha(1);
+		UI_DrawPanel(panel_x, panel_y, panel_x + perf_w, panel_y + perf_h, c_red, 0.35);
 	}
 	
 	var fps_color = c_lime;

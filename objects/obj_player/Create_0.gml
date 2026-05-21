@@ -82,8 +82,9 @@ if (variable_global_exists("spawn_x")) {
 
 #region Script Bindings
 
-// SetFacingFromVector must exist before TileMovement_BeginStep runs on Create.
+// Pathing before movement (OnTileLanded delegates); animation before movement (BeginStep faces).
 PlayerAnimation_Register(id);
+PlayerPathing_Register(id);
 PlayerMovement_Register(id);
 PlayerInteraction_Register(id);
 

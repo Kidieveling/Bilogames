@@ -74,13 +74,10 @@ function PlayerMovement_Register(_inst) {
 			buffer_y = 0;
 			queued_keyboard_x = 0;
 			queued_keyboard_y = 0;
-			queued_click_path = [];
 			pending_keyboard_step = false;
 			keyboard_hold_frames = 0;
 			walk_anim_hold = 0;
-			click_path = [];
-			click_path_index = 0;
-			pending_click_move = false;
+			PlayerPathing_ClearClickPath();
 			if (instance_exists(obj_controller)) {
 				obj_controller.CancelClickMove(id);
 			}
@@ -97,13 +94,6 @@ function PlayerMovement_Register(_inst) {
 			var _next_tile_x = TileXFromPosition(_next_x);
 			var _next_tile_y = TileYFromBottom(_next_y);
 			return !obj_controller.IsTileWalkable(_next_tile_x, _next_tile_y, true);
-		};
-		
-		TileMovement_ClearClickPath = function() {
-			click_path = [];
-			click_path_index = 0;
-			queued_click_path = [];
-			pending_click_move = false;
 		};
 		
 		TileMovement_PulseWalkAnim = function() {
@@ -137,58 +127,6 @@ function PlayerMovement_Register(_inst) {
 			return true;
 		};
 		
-		TileMovement_AdvanceClickStep = function() {
-			if (moving) {
-				return false;
-			}
-			while (click_path_index < array_length(click_path)) {
-				var _step = click_path[click_path_index];
-				if (point_distance(x, y, _step.x, _step.y) < 1) {
-					click_path_index += 1;
-					continue;
-				}
-				if (TileMovement_IsStepBlocked(_step.x, _step.y)) {
-					TileMovement_ClearClickPath();
-					if (instance_exists(obj_controller)) {
-						obj_controller.ClearPendingInteraction(id);
-					}
-					return false;
-				}
-				var _step_x = sign(_step.x - x);
-				var _step_y = sign(_step.y - y);
-				TileMovement_BeginStep(_step.x, _step.y, _step_x, _step_y, true);
-				return true;
-			}
-			TileMovement_ClearClickPath();
-			return false;
-		};
-		
-		// Redirect mid-lerp waits for tile land — avoids snapping x/y when the player retargets.
-		TileMovement_SetPath = function(_path_points) {
-			buffer_x = 0;
-			buffer_y = 0;
-			queued_keyboard_x = 0;
-			queued_keyboard_y = 0;
-			queued_click_path = [];
-			if (array_length(_path_points) <= 0) {
-				if (!moving) {
-					TileMovement_ClearClickPath();
-				}
-				return;
-			}
-			if (moving) {
-				queued_click_path = _path_points;
-				click_path = [];
-				click_path_index = 0;
-				pending_click_move = true;
-			} else {
-				click_path = _path_points;
-				click_path_index = 0;
-				pending_click_move = true;
-				TileMovement_AdvanceClickStep();
-			}
-		};
-		
 		#endregion
 		
 		#region Tile Landed
@@ -198,21 +136,8 @@ function PlayerMovement_Register(_inst) {
 			x = target_x;
 			y = target_y;
 			moving = false;
-			if (array_length(click_path) > 0 && click_path_index >= array_length(click_path) - 1) {
-				click_path = [];
-				click_path_index = 0;
-				pending_click_move = false;
-				if (pending_click_target != noone && (!instance_exists(pending_click_target) || !obj_controller.IsInInteractionRange(id, pending_click_target, 1))) {
-					if (instance_exists(obj_controller)) {
-						obj_controller.ClearPendingInteraction(id);
-					} else {
-						pending_click_target = noone;
-						pending_click_action = "";
-						pending_click_action_label = "";
-					}
-				}
-			} else if (array_length(click_path) > 0) {
-				click_path_index += 1;
+			if (PlayerPathing_OnTileLanded()) {
+				return;
 			}
 			if (queued_keyboard_x != 0 || queued_keyboard_y != 0) {
 				var _qx = queued_keyboard_x;
@@ -220,23 +145,11 @@ function PlayerMovement_Register(_inst) {
 				queued_keyboard_x = 0;
 				queued_keyboard_y = 0;
 				keyboard_hold_frames = 0;
-				TileMovement_ClearClickPath();
+				PlayerPathing_ClearClickPath();
 				if (instance_exists(obj_controller)) {
 					obj_controller.CancelClickMove(id);
 				}
 				TileMovement_TryKeyboardStep(_qx, _qy);
-				return;
-			}
-			if (array_length(queued_click_path) > 0) {
-				click_path = queued_click_path;
-				queued_click_path = [];
-				click_path_index = 0;
-				pending_click_move = true;
-				TileMovement_AdvanceClickStep();
-				return;
-			}
-			if (array_length(click_path) > 0) {
-				TileMovement_AdvanceClickStep();
 				return;
 			}
 			if (!IsDialogueBlockingInput() && (_input_x != 0 || _input_y != 0) && (buffer_x != 0 || buffer_y != 0)
@@ -268,11 +181,11 @@ function PlayerMovement_Register(_inst) {
 			keyboard_hold_frames += 1;
 			var key_pressed = keyboard_check_pressed(ord("W")) || keyboard_check_pressed(ord("A"))
 				|| keyboard_check_pressed(ord("S")) || keyboard_check_pressed(ord("D"));
-			var interrupting_click_move = array_length(click_path) > 0 || array_length(queued_click_path) > 0 || pending_click_move;
+			var interrupting_click_move = PlayerPathing_HasActivePath();
 			if (moving && interrupting_click_move) {
 				queued_keyboard_x = input_x;
 				queued_keyboard_y = input_y;
-				TileMovement_ClearClickPath();
+				PlayerPathing_ClearClickPath();
 				if (instance_exists(obj_controller)) {
 					obj_controller.CancelClickMove(id);
 				}

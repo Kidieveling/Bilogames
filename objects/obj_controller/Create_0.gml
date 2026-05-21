@@ -1,5 +1,5 @@
-/// @description Persistent UI controller: inventory grid, skills/quest panel, pathfinding,
-/// right-click context menu, and world-click routing. GameState_Init runs once at room start.
+/// @description Persistent UI controller: inventory grid, pathfinding, context menu.
+/// Fixed HUD draw/input and GameState init are bound from scripts on Create.
 
 GameState_Init();
 
@@ -54,6 +54,7 @@ interaction_range_tiles = 1;
 #region Script Bindings
 
 UIHelpers_Register(id);
+ControllerUI_Register(id);
 Pathfinding_Register(id);
 ContextMenu_Register(id);
 

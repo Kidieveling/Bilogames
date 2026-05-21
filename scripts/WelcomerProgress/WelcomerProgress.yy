@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"WelcomerProgress",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"WelcomerProgress",
+  "parent":{
+    "name":"Welcomer",
+    "path":"folders/Scripts/Actors/NPCs/Welcomer.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

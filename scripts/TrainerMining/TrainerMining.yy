@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"TrainerMining",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"TrainerMining",
+  "parent":{
+    "name":"Trainers",
+    "path":"folders/Scripts/Actors/NPCs/Trainers.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

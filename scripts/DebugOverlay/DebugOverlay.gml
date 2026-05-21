@@ -171,12 +171,7 @@ function DebugOverlay_DrawPanel(_x, _y, _title, _lines, _panel_w = 300) {
 	var pad = 6;
 	var panel_h = pad * 2 + line_h + array_length(_lines) * line_h;
 	
-	draw_set_alpha(0.82);
-	draw_set_color(c_black);
-	draw_rectangle(_x, _y, _x + _panel_w, _y + panel_h, false);
-	draw_set_alpha(1);
-	draw_set_color(make_color_rgb(90, 90, 98));
-	draw_rectangle(_x, _y, _x + _panel_w, _y + panel_h, true);
+	UI_DrawBorderedPanel(_x, _y, _x + _panel_w, _y + panel_h, c_black, 0.82, UI_PANEL_BORDER_NEUTRAL, 1);
 	
 	draw_set_font(fntSmaller);
 	draw_set_halign(fa_left);

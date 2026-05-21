@@ -40,6 +40,10 @@ Preferred workflow:
 
 This is a GameMaker Studio project using GML.
 
+## Naming
+- **`NAMING.md`** — canonical prefixes and feature-first script rules (`Dialogue_*`, `Quest_*`, `obj_`, `spr_`, `rm_`).
+- New code: feature-prefixed functions and script assets; avoid `scr_` and new unprefixed globals.
+
 ## Code Style
 - Prefer modular helper scripts.
 - Use modern GML syntax.

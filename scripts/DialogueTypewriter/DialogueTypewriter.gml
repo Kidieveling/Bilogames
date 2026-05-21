@@ -27,14 +27,34 @@ function DialogueTypewriter_Register(_inst) {
 				choices_visible = false;
 				return;
 			}
-			
-			// Menus belong to CHOICES beats only — LINE beats never show choice rows mid-conversation.
-			if (conv_active && conv_beat_type != DIALOGUE_BEAT_CHOICES) {
+			if (conv_active && conv_beat_type == DIALOGUE_BEAT_LINE) {
 				choices_visible = false;
 				return;
 			}
-			
 			choices_visible = true;
+		};
+		
+		// After a LINE beat finishes typing, merge an immediate empty-prompt CHOICES beat in-place (keep full_text).
+		Dialogue_OnLineTypewriterComplete = function() {
+			if (!conv_active || conv_beat_type != DIALOGUE_BEAT_LINE) {
+				Dialogue_UpdateChoicesVisibility();
+				return;
+			}
+			var next_index = conv_beat_index + 1;
+			if (next_index < array_length(conv_beats)) {
+				var next_beat = conv_beats[next_index];
+				if (next_beat.type == DIALOGUE_BEAT_CHOICES && string_length(next_beat.prompt) <= 0) {
+					conv_beat_index = next_index;
+					conv_beat_type = DIALOGUE_BEAT_CHOICES;
+					choices = next_beat.choices;
+					choice_index = 0;
+					text_finished = true;
+					display_text = full_text;
+					choices_visible = array_length(choices) > 0;
+					return;
+				}
+			}
+			Dialogue_UpdateChoicesVisibility();
 		};
 		
 		Dialogue_TickTypewriter = function() {
@@ -54,7 +74,7 @@ function DialogueTypewriter_Register(_inst) {
 			if (typewriter_index >= string_length(full_text)) {
 				text_finished = true;
 				display_text = full_text;
-				Dialogue_UpdateChoicesVisibility();
+				Dialogue_OnLineTypewriterComplete();
 			}
 		};
 		
@@ -66,7 +86,7 @@ function DialogueTypewriter_Register(_inst) {
 			typewriter_index = string_length(full_text);
 			display_text = full_text;
 			text_finished = true;
-			Dialogue_UpdateChoicesVisibility();
+			Dialogue_OnLineTypewriterComplete();
 		};
 		
 		Dialogue_ResetPresentationState = function() {

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ResourceGather",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ResourceGather",
+  "parent":{
+    "name":"Resource",
+    "path":"folders/Scripts/Systems/Resource.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

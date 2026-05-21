@@ -152,7 +152,15 @@ function DialogueConversation_Register(_inst) {
 				
 				case DIALOGUE_BEAT_CHOICES:
 					choices = beat.choices;
-					Dialogue_ResetTypewriter(beat.prompt);
+					if (string_length(beat.prompt) > 0) {
+						Dialogue_ResetTypewriter(beat.prompt);
+					} else if (string_length(full_text) > 0) {
+						text_finished = true;
+						display_text = full_text;
+						choices_visible = array_length(choices) > 0;
+					} else {
+						Dialogue_ResetTypewriter("");
+					}
 					break;
 				
 				case DIALOGUE_BEAT_ACTION:
@@ -186,10 +194,6 @@ function DialogueConversation_Register(_inst) {
 			}
 			
 			if (conv_beat_type == DIALOGUE_BEAT_CHOICES) {
-				if (!choices_visible) {
-					Dialogue_FinishTypewriter();
-					return true;
-				}
 				return false;
 			}
 			

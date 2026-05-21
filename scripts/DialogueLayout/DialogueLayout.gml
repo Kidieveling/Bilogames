@@ -24,7 +24,6 @@ function DialogueLayout_Register(_inst) {
 			
 			draw_set_font(fntSmaller);
 			
-			var bodyText = Dialogue_GetBodyTextForLayout();
 			var speakerName = panel_speaker_name;
 			if (speakerName == "") {
 				speakerName = DialogueUI_GetSpeakerName(GetActiveSpeaker());
@@ -35,10 +34,12 @@ function DialogueLayout_Register(_inst) {
 			var panelW = display_get_gui_width() * DIALOGUEUI_WIDTH_FACTOR;
 			var textWidth = panelW - padding * 2;
 			var nameRowH = (speakerName != "") ? DIALOGUEUI_NAME_GAP : 0;
+			// Phase 1: typewriter body; phase 2: full line stays, choices stack below (never replace body with choice labels).
+			var bodyText = text_finished ? full_text : display_text;
 			var bodyLines = max(1, ceil(string_width(bodyText) / max(1, textWidth)));
-			
-			// Panel height shrinks while typing — choice rows count only after the line is fully revealed.
-			var choicesBlockH = choices_visible ? DIALOGUEUI_CHOICE_TOP_GAP + array_length(choices) * DIALOGUEUI_CHOICE_ROW_HEIGHT : 0;
+			var choicesBlockH = (choices_visible && text_finished)
+				? DIALOGUEUI_CHOICE_TOP_GAP + array_length(choices) * DIALOGUEUI_CHOICE_ROW_HEIGHT
+				: 0;
 			
 			var contentH = nameRowH + bodyLines * lineGap + choicesBlockH;
 			var panelH = contentH + padding * 2;
@@ -50,8 +51,8 @@ function DialogueLayout_Register(_inst) {
 			layout.box_x2 = panel.x2;
 			layout.box_y2 = panel.y2;
 			layout.speaker_name = speakerName;
-			layout.body_text = text_finished ? full_text : display_text;
-			layout.display_text = layout.body_text;
+			layout.body_text = bodyText;
+			layout.display_text = bodyText;
 			layout.padding_x = padding;
 			layout.padding_y = padding;
 			layout.line_gap = lineGap;
@@ -131,61 +132,27 @@ function DialogueLayout_Register(_inst) {
 			}
 			
 			if (dialogue_dim_background) {
-				draw_set_alpha(0.15);
-				draw_set_color(c_black);
-				draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
-				draw_set_alpha(1);
+				UI_DrawDimScreen(0.15, c_black);
 			}
 			
-			draw_set_alpha(0.88);
-			draw_set_color(make_color_rgb(12, 12, 16));
-			draw_rectangle(_layout.box_x1, _layout.box_y1, _layout.box_x2, _layout.box_y2, false);
-			draw_set_alpha(1);
-			draw_set_color(make_color_rgb(90, 90, 98));
-			draw_rectangle(_layout.box_x1, _layout.box_y1, _layout.box_x2, _layout.box_y2, true);
+			UI_DrawBorderedPanel(_layout.box_x1, _layout.box_y1, _layout.box_x2, _layout.box_y2,
+				UI_DIALOGUE_PANEL_FILL, 0.88, UI_DIALOGUE_PANEL_BORDER, 1);
 			
 			var textX = _layout.box_x1 + _layout.padding_x;
 			var textY = _layout.box_y1 + _layout.padding_y;
 			
 			if (_layout.speaker_name != "") {
 				draw_set_color(make_color_rgb(200, 196, 184));
-				draw_text(textX, textY, _layout.speaker_name);
+				draw_text(textX, textY, _layout.speaker_name + ":");
 				textY += DIALOGUEUI_NAME_GAP;
 			}
 			
 			draw_set_color(c_white);
 			draw_text_ext(textX, textY, _layout.body_text, _layout.line_gap, _layout.text_width);
 			
-			if (!choices_visible) {
-				draw_set_color(c_white);
-				return;
+			if (choices_visible && text_finished) {
+				UI_DrawChoiceList(_layout.choice_rects, choices, choice_index);
 			}
-			
-			for (var i = 0; i < array_length(choices); ++i) {
-				if (i >= array_length(_layout.choice_rects)) {
-					break;
-				}
-				
-				var choiceText = choices[i];
-				if (is_struct(choiceText)) {
-					choiceText = choiceText.text;
-				}
-				
-				var row = _layout.choice_rects[i];
-				var isSelected = (i == choice_index);
-				
-				if (isSelected) {
-					draw_set_alpha(0.22);
-					draw_set_color(make_color_rgb(70, 72, 88));
-					draw_rectangle(row.x1 - 4, row.y1 - 2, row.x2 + 4, row.y2 + 2, false);
-					draw_set_alpha(1);
-				}
-				
-				draw_set_color(isSelected ? c_white : make_color_rgb(210, 210, 215));
-				draw_text(row.x1, row.y1, (isSelected ? "> " : "  ") + choiceText);
-			}
-			
-			draw_set_color(c_white);
 		};
 		
 		#endregion
